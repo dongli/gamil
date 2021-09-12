@@ -1,17 +1,23 @@
 module gamil_mod
 
+  use latlon_process_mod
   use latlon_mesh_mod, mesh_type => latlon_mesh_type
   use gamil_params_mod
+  use dycore_mod
+  use history_mod
 
   implicit none
 
   private
 
+  public dycore
+
   public gamil_init
   public gamil_run
   public gamil_final
 
-  type(mesh_type) mesh
+  type(mesh_type), allocatable :: mesh
+  type(dycore_type), allocatable :: dycore
 
 contains
 
@@ -19,18 +25,26 @@ contains
 
     character(*), intent(in) :: namelist
 
+    allocate(proc, mesh, dycore)
+
     call fiona_init()
     call gamil_params_init(namelist)
+    call proc%init()
     call mesh%init(nx, ny, nz, hwh=2, neq=1, radius=radius)
-    call mesh%write('mesh.nc')
+    call dycore%init(mesh)
+    call history_init(case_name, dycore)
 
   end subroutine gamil_init
 
   subroutine gamil_run()
 
+    call history_write(dycore, 1)
+
   end subroutine gamil_run
 
   subroutine gamil_final()
+
+    deallocate(proc, mesh, dycore)
 
   end subroutine gamil_final
 

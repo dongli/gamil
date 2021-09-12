@@ -15,4 +15,10 @@ module mesh_const_mod
   integer, parameter ::   global_domain = 1
   integer, parameter :: regional_domain = 2
 
+  ! Orient
+  integer, parameter :: left   = 1
+  integer, parameter :: right  = 2
+  integer, parameter :: bottom = 3
+  integer, parameter :: top    = 4
+
 end module mesh_const_mod

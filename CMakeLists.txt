@@ -28,12 +28,22 @@ add_subdirectory(lib/fiona)
 
 set(sources
   src/kinds_mod.F90
+  src/var_types_mod.F90
   src/mesh_const_mod.F90
   src/mesh_math_mod.F90
   src/gauss_quad_mod.F90
   src/latlon_mesh_mod.F90
+  src/latlon_array_mod.F90
+  src/latlon_process_mod.F90
+  src/latlon_halo_mod.F90
+  src/const_mod.F90
+  src/static_mod.F90
+  src/state_mod.F90
+  src/dycore_mod.F90
+  src/history_mod.F90
   src/gamil_params_mod.F90
   src/gamil_mod.F90
+  src/test_swm_mz_mod.F90
 )
 
 add_library(gamil ${sources})

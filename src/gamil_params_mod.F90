@@ -4,6 +4,8 @@ module gamil_params_mod
 
   implicit none
 
+  character(30) :: case_name = ''
+
   integer :: nx = 0
   integer :: ny = 0
   integer :: nz = 1
@@ -11,6 +13,7 @@ module gamil_params_mod
   real(r8) :: radius = 6.37122e6_r8
 
   namelist /gamil_control/ &
+    case_name            , &
     nx                   , &
     ny                   , &
     nz
@@ -25,6 +28,7 @@ contains
     read(10, nml=gamil_control)
     close(10)
 
+    write(*, *) 'case_name = ', trim(case_name)
     write(*, *) 'nx = ', nx
     write(*, *) 'ny = ', ny
     write(*, *) 'nz = ', nz
