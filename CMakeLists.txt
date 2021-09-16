@@ -35,6 +35,7 @@ set(sources
   src/latlon_mesh_mod.F90
   src/latlon_array_mod.F90
   src/latlon_process_mod.F90
+  src/latlon_parallel_mod.F90
   src/latlon_halo_mod.F90
   src/const_mod.F90
   src/static_mod.F90

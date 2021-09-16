@@ -11,14 +11,15 @@ module latlon_mesh_mod
   type latlon_mesh_type
     logical :: initialized = .false.
     integer :: domain_type = global_domain
-    integer :: nx  = 0                                  ! Longitude cell size
-    integer :: ny  = 0                                  ! Latitude cell size
-    integer :: nz  = 0                                  ! Vertical cell size
-    integer :: ims = 0, ime = 0, ids = 0, ide = 0       ! Longitude index range
-    integer :: jms = 0, jme = 0, jds = 0, jde = 0       ! Latitude index range
-    integer :: kms = 1, kme = 1, kds = 1, kde = 1       ! Vertical index range
-    integer :: hwh = 0                                  ! Horizontal halo width
-    integer :: hwv = 0                                  ! Vertical halo width
+    integer :: nx  = 0                                  ! Cell  size  along x-axis
+    integer :: ny  = 0                                  ! Cell  size  along y-axis
+    integer :: nz  = 0                                  ! Cell  size  along z-axis
+    integer :: ims = 0, ime = 0, ids = 0, ide = 0       ! Index range along x-axis
+    integer :: jms = 0, jme = 0, jds = 0, jde = 0       ! Index range along y-axis
+    integer :: kms = 1, kme = 1, kds = 1, kde = 1       ! Index range along z-axis
+    integer :: hwx = 0                                  ! Halo  width along x-axis
+    integer :: hwy = 0                                  ! Halo  width along y-axis
+    integer :: hwz = 0                                  ! Halo  width along z-axis
     ! Point type and their indicators
     integer :: npt  = 0                                 ! Number of points in each cell (e.g., cell center, vertex)
     integer :: ncq  = 0                                 ! Number of quadrature points in cell
@@ -31,7 +32,7 @@ module latlon_mesh_mod
     integer :: pee(4)                                   ! Point end index for quadrature points on edges
     integer :: pqs                                      ! Point start index for quadrature points in cell
     integer :: pqe                                      ! Point end index for quadrature points in cell
-    real(r8) :: radius                                  ! Sphere radius
+    real(r8) :: r                                       ! Sphere radius
     real(r8) :: xmin = 0, xmax = 0                      ! Longitude range
     real(r8) :: ymin = 0, ymax = 0                      ! Latitude range
     real(r8) :: dx, dy
@@ -53,24 +54,30 @@ module latlon_mesh_mod
 
 contains
 
-  subroutine latlon_mesh_init(this, nx, ny, nz, rlon0, rlat0, &
-                              xmin, xmax, ymin, ymax, hwh, hwv, &
-                              neq, radius)
+  subroutine latlon_mesh_init(this, nx, ny, nz, dx, dy, rlon0, rlat0, xmin, xmax, ymin, ymax, hwx, hwy, hwz, neq, r, &
+                              ids, ide, jds, jde)
 
     class(latlon_mesh_type), intent(inout) :: this
     integer , intent(in)           :: nx
     integer , intent(in)           :: ny
     integer , intent(in)           :: nz
+    real(r8), intent(in), optional :: dx
+    real(r8), intent(in), optional :: dy
     real(r8), intent(in), optional :: rlon0
     real(r8), intent(in), optional :: rlat0
     real(r8), intent(in), optional :: xmin
     real(r8), intent(in), optional :: xmax
     real(r8), intent(in), optional :: ymin
     real(r8), intent(in), optional :: ymax
-    integer , intent(in), optional :: hwh
-    integer , intent(in), optional :: hwv
+    integer , intent(in), optional :: hwx
+    integer , intent(in), optional :: hwy
+    integer , intent(in), optional :: hwz
     integer , intent(in), optional :: neq
-    real(r8), intent(in), optional :: radius
+    real(r8), intent(in), optional :: r
+    integer , intent(in), optional :: ids
+    integer , intent(in), optional :: ide
+    integer , intent(in), optional :: jds
+    integer , intent(in), optional :: jde
 
     integer i, j, p, q1, q2
 
@@ -80,37 +87,45 @@ contains
     this%ny = ny
     this%nz = nz
 
+    if (present(hwx)) this%hwx = hwx
+    if (present(hwy)) this%hwy = hwy
+    if (present(hwz)) this%hwz = hwz
+    if (present(neq)) this%neq = neq
+    if (present(r  )) this%r   = r
+
+    this%ids = merge(ids, 1 , present(ids))
+    this%ide = merge(ide, nx, present(ide))
+    this%ims = this%ids - this%hwx
+    this%ime = this%ide + this%hwx
+    this%jds = merge(jds, 1 , present(jds))
+    this%jde = merge(jde, ny, present(jde))
+    this%jms = this%jds - this%hwy
+    this%jme = this%jde + this%hwy
+    this%kds = 1
+    this%kde = nz
+    this%kms = this%kds - this%hwz
+    this%kme = this%kde + this%hwz
+    this%npt = 5 + 4 * this%neq + this%neq**2
+
     if (present(xmin) .and. present(xmax)) then
       this%xmin = xmin
       this%xmax = xmax
-    else
-      this%xmin = 0
-      this%xmax = pi2
+      this%dx   = (this%xmax - this%xmin) / (this%ide - this%ids)
+    else if (present(dx)) then
+      this%xmin = dx * (this%ids - 1)
+      this%xmax = dx * (this%ide - 1)
+      this%dx   = dx
     end if
 
     if (present(ymin) .and. present(ymax)) then
       this%ymin = ymin
       this%ymax = ymax
-    else
-      this%ymin = -pi0p5
-      this%ymax =  pi0p5
+      this%dy   = (this%ymax - this%ymin) / (this%jde - this%jds)
+    else if (present(dy)) then
+      this%ymin = -pi0p5 + dy * (this%jds - 1)
+      this%ymax = -pi0p5 + dy * (this%jde - 1)
+      this%dy   = dy
     end if
-
-    if (present(hwh)) this%hwh = hwh
-    if (present(hwv)) this%hwv = hwv
-    if (present(neq)) this%neq = neq
-    if (present(radius)) this%radius = radius
-
-    this%ids = 1
-    this%ide = nx
-    this%ims = this%ids - this%hwh
-    this%ime = this%ide + this%hwh
-    this%jds = 1
-    this%jde = ny
-    this%jms = this%jds - this%hwh
-    this%jme = this%jde + this%hwh
-
-    this%npt = 5 + 4 * this%neq + this%neq**2
 
     allocate(this%xeq(this%neq))
     allocate(this%weq(this%neq))
@@ -133,9 +148,6 @@ contains
     if (present(rlon0) .and. present(rlat0)) then
 
     else
-      this%dx = (this%xmax - this%xmin) / this%nx
-      this%dy = (this%ymax - this%ymin) / (this%ny - 1)
-
       do j = this%jms, this%jme
         do i = this%ims, this%ime
           ! Cell center
@@ -150,8 +162,8 @@ contains
           !   o---------------o
           !
           this%pc = 1
-          this%lon(1,i,j) = this%xmin + (i - 1) * this%dx
-          this%lat(1,i,j) = this%ymin + (j - 1) * this%dy
+          this%lon(1,i,j) =          (i - 1) * this%dx
+          this%lat(1,i,j) = -pi0p5 + (j - 1) * this%dy
           ! Vertices
           ! 5 o---------------o 4
           !   |               |
@@ -241,7 +253,7 @@ contains
       end do
     end if
 
-    call this%set_metrics(this%radius)
+    call this%set_metrics(this%r)
 
   end subroutine latlon_mesh_init
 
@@ -273,13 +285,13 @@ contains
   subroutine latlon_mesh_get_params(this, ims, ime, ids, ide, nx, &
                                           jms, jme, jds, jde, ny, &
                                           kms, kme, kds, kde, nz, &
-                                          pc , neq)
+                                          hwx, hwy, hwz, pc , neq)
 
     class(latlon_mesh_type), intent(in) :: this
     integer, intent(out), optional :: ims, ime, ids, ide, nx
     integer, intent(out), optional :: jms, jme, jds, jde, ny
     integer, intent(out), optional :: kms, kme, kds, kde, nz
-    integer, intent(out), optional :: pc , neq
+    integer, intent(out), optional :: hwx, hwy, hwz, pc , neq
 
     if (present(ims)) ims = this%ims
     if (present(ime)) ime = this%ime
@@ -296,6 +308,9 @@ contains
     if (present(kds)) kds = this%kds
     if (present(kde)) kde = this%kde
     if (present(nz )) nz  = this%nz
+    if (present(hwx)) hwx = this%hwx
+    if (present(hwy)) hwy = this%hwy
+    if (present(hwz)) hwz = this%hwz
     if (present(pc )) pc  = this%pc
     if (present(neq)) neq = this%neq
 

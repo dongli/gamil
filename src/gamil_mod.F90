@@ -30,7 +30,7 @@ contains
     call fiona_init()
     call gamil_params_init(namelist)
     call proc%init()
-    call mesh%init(nx, ny, nz, hwh=2, neq=1, radius=radius)
+    call proc%decomp_domain(mesh, nx, ny, nz, hwx=2, hwy=2, neq=1, r=radius)
     call dycore%init(mesh)
     call history_init(case_name, dycore)
 

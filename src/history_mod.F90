@@ -1,6 +1,8 @@
 module history_mod
 
+  use flogger
   use dycore_mod
+  use latlon_process_mod
 
   implicit none
 
@@ -28,6 +30,8 @@ contains
 
     call dycore%static%array%write('h0', time_in_seconds=0.0d0, new_file=.true.)
     call dycore%state(itime)%array%write('h0', time_in_seconds=0.0d0, new_file=.false.)
+
+    call log_notice('Write history file.', pid=proc%id)
 
   end subroutine history_write
 

@@ -127,10 +127,10 @@ contains
     case (8)
       dtype = MPI_DOUBLE
     end select
-    !allocate(this%halo(8))
-    !do i = 1, size(this%halo)
-    !  call this%halo(i)%init(mesh, i, dtype, host_id=proc%id, proc_id=proc%ngb(i)%id)
-    !end do
+    allocate(this%halo(size(proc%ngb)))
+    do i = 1, size(this%halo)
+      call this%halo(i)%init(mesh, proc%ngb(i)%orient, dtype, host_id=proc%id, proc_id=proc%ngb(i)%id)
+    end do
 
     this%initialized = .true.
 
@@ -1060,14 +1060,40 @@ contains
 
   end subroutine latlon_array_get_array_4d_1
 
-  subroutine latlon_array_get_array_4d_2(this, ptr, loc, with_halo, ivs, ive)
+  subroutine latlon_array_get_array_4d_2(this, ptr, loc, tag)
 
     class(latlon_array_type), intent(in), target :: this
     real(r8), intent(out), pointer :: ptr(:,:,:,:)
     character(*), intent(in) :: loc
-    logical, intent(in) :: with_halo
-    integer, intent(in) :: ivs
-    integer, intent(in) :: ive
+    character(*), intent(in) :: tag
+
+    integer ivs, ive, loc_is
+    logical with_halo
+
+    if (.not. this%initialized) then
+      nullify(ptr)
+      return
+    end if
+
+    ivs = 0; ive = 0; loc_is = 0
+    do i = 1, this%var_stack%size
+      associate (info => this%var_stack%var_info(i))
+      if (info%loc == loc .and. info%tag == tag) then
+        if (loc_is == 0) loc_is = i
+        if (ivs == 0) then
+          ivs = i
+          with_halo = info%with_halo
+        end if
+      else if (ivs /= 0) then
+        ive = i - 1
+        exit
+      end if
+      end associate
+    end do
+    if (ivs == 0) return
+    if (ive == 0) ive = i - 1 ! Matched variables are at tail.
+    ivs = ivs - loc_is + 1
+    ive = ive - loc_is + 1
 
     select case (loc)
     case ('C')
@@ -1332,23 +1358,23 @@ contains
 
     do i = 1, this%var_stack%size
       associate (info => this%var_stack%var_info(i))
-        if (info%output) then
-          if (fiona_has_var(dataset_name, info%name)) cycle
-          if (proc%is_root()) call log_notice('Define output for variable ' // trim(info%name) // '.', pid=proc%id)
-          if (info%only_2d) then
-            select case (info%loc)
-            case ('C', 'CA')
-              call fiona_add_var(dataset_name, info%name, info%long_name, info%units, cell_2d_dims, 'r4')
-              call fiona_add_att(dataset_name, info%name, 'coordinates', 'lon lat')
-            end select
-          else
-            select case (info%loc)
-            case ('C', 'CA')
-              call fiona_add_var(dataset_name, info%name, info%long_name, info%units, cell_3d_dims, 'r4')
-              call fiona_add_att(dataset_name, info%name, 'coordinates', 'lon lat z')
-            end select
-          end if
+      if (info%output) then
+        if (fiona_has_var(dataset_name, info%name)) cycle
+        if (proc%is_root()) call log_notice('Define output for variable ' // trim(info%name) // '.', pid=proc%id)
+        if (info%only_2d) then
+          select case (info%loc)
+          case ('C', 'CA')
+            call fiona_add_var(dataset_name, info%name, info%long_name, info%units, cell_2d_dims, 'r4')
+            call fiona_add_att(dataset_name, info%name, 'coordinates', 'lon lat')
+          end select
+        else
+          select case (info%loc)
+          case ('C', 'CA')
+            call fiona_add_var(dataset_name, info%name, info%long_name, info%units, cell_3d_dims, 'r4')
+            call fiona_add_att(dataset_name, info%name, 'coordinates', 'lon lat z')
+          end select
         end if
+      end if
       end associate
     end do
 
@@ -1364,25 +1390,29 @@ contains
 
     real(r8), pointer :: ptr_2d(:,:)
     real(r8), pointer :: ptr_3d(:,:,:)
-    type(var_info_type), pointer :: info
-    integer i, ids, ide, nx, jds, jde, ny, kds, kde, nz, pc
+    integer i, ids, ide, jds, jde, kds, kde, pc, nx, ny, nz
 
-    call this%mesh%get_params(ids=ids, ide=ide, nx=nx, jds=jds, jde=jde, ny=ny, kds=kds, kde=kde, nz=nz, pc=pc)
+    call this%mesh%get_params(ids=ids, ide=ide, jds=jds, jde=jde, kds=kds, kde=kde, pc=pc)
 
-    if (proc%is_root()) call log_notice('Write.')
+    nx = ide - ids + 1
+    ny = jde - jds + 1
+    nz = kde - kds + 1
 
     call fiona_start_output(dataset_name, time_in_seconds, new_file, tag)
     do i = 1, this%var_stack%size
-      info => this%var_stack%var_info(i)
+      associate (info => this%var_stack%var_info(i))
       if (info%output) then
         if (info%only_2d) then
           call this%get_array(ptr_2d, info)
-          call fiona_output(dataset_name, info%name, ptr_2d(ids:ide,jds:jde), start=[ids,jds], count=[nx,ny])
+          call fiona_output(dataset_name, info%name, ptr_2d(ids:ide,jds:jde), &
+                            start=[ids,jds], count=[nx,ny])
         else
           call this%get_array(ptr_3d, info)
-          call fiona_output(dataset_name, info%name, ptr_3d(ids:ide,jds:jde,kds:kde), start=[ids,jds,kds], count=[nx,ny,nz])
+          call fiona_output(dataset_name, info%name, ptr_3d(ids:ide,jds:jde,kds:kde), &
+                            start=[ids,jds,kds], count=[nx,ny,nz])
         end if
       end if
+      end associate
     end do
     call fiona_output(dataset_name, 'lon', this%mesh%lon(pc,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
     call fiona_output(dataset_name, 'lat', this%mesh%lat(pc,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])

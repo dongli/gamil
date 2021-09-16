@@ -10,13 +10,14 @@ module gamil_params_mod
   integer :: ny = 0
   integer :: nz = 1
 
+  real(r8) :: reduce_factors(100)
+
   real(r8) :: radius = 6.37122e6_r8
 
   namelist /gamil_control/ &
     case_name            , &
-    nx                   , &
-    ny                   , &
-    nz
+    nx, ny, nz           , &
+    reduce_factors
 
 contains
 
@@ -27,11 +28,6 @@ contains
     open(10, file=file_path, status='old')
     read(10, nml=gamil_control)
     close(10)
-
-    write(*, *) 'case_name = ', trim(case_name)
-    write(*, *) 'nx = ', nx
-    write(*, *) 'ny = ', ny
-    write(*, *) 'nz = ', nz
 
   end subroutine gamil_params_init
 
