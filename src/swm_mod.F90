@@ -15,9 +15,9 @@ module swm_mod
   public swm_flux_x
   public swm_flux_y
   public swm_sources
-  public swm_raw_to_cons
-  public swm_before_recon
-  public swm_after_flux
+  public swm_raw_to_conservative
+  public swm_before_reconstruct
+  public swm_after_riemann_solver
 
 contains
 
@@ -25,7 +25,7 @@ contains
 
     real(r8), intent(in) :: iG(3,3)
     real(r8), intent(in) :: J
-    real(r8), intent(in) :: q(3)
+    real(r8), intent(in) :: q(:)
 
     real(r8) u, h
 
@@ -40,7 +40,7 @@ contains
 
     real(r8), intent(in) :: iG(3,3)
     real(r8), intent(in) :: J
-    real(r8), intent(in) :: q(3)
+    real(r8), intent(in) :: q(:)
 
     real(r8) v, h
 
@@ -55,8 +55,8 @@ contains
 
     real(r8), intent(in) :: iG(3,3)
     real(r8), intent(in) :: J
-    real(r8), intent(in) :: q(3)
-    real(r8) swm_flux_x(3)
+    real(r8), intent(in) :: q(:)
+    real(r8) swm_flux_x(size(q))
 
     real(r8) u, h
 
@@ -73,8 +73,8 @@ contains
 
     real(r8), intent(in) :: iG(3,3)
     real(r8), intent(in) :: J
-    real(r8), intent(in) :: q(3)
-    real(r8) swm_flux_y(3)
+    real(r8), intent(in) :: q(:)
+    real(r8) swm_flux_y(size(q))
 
     real(r8) v, h
 
@@ -124,7 +124,7 @@ contains
 
   end function swm_sources
 
-  subroutine swm_raw_to_cons(state, static)
+  subroutine swm_raw_to_conservative(state, static)
 
     ! Only called at run beginning.
 
@@ -147,9 +147,9 @@ contains
 
     call fill_halo(state%array)
 
-  end subroutine swm_raw_to_cons
+  end subroutine swm_raw_to_conservative
 
-  subroutine swm_before_recon(state, static)
+  subroutine swm_before_reconstruct(state, static)
 
     type(state_type ), intent(inout) :: state
     type(static_type), intent(in   ) :: static
@@ -166,9 +166,9 @@ contains
     end do
     end associate
 
-  end subroutine swm_before_recon
+  end subroutine swm_before_reconstruct
 
-  subroutine swm_after_flux(state, static)
+  subroutine swm_after_riemann_solver(state, static)
 
     type(state_type ), intent(inout) :: state
     type(static_type), intent(in   ) :: static
@@ -185,6 +185,6 @@ contains
     end do
     end associate
 
-  end subroutine swm_after_flux
+  end subroutine swm_after_riemann_solver
 
 end module swm_mod

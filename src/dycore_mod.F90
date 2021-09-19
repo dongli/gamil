@@ -4,7 +4,6 @@ module dycore_mod
   use static_mod
   use state_mod
   use swm_mod
-  use dycore_interfaces_mod
   use fv_mod
 
   implicit none
@@ -12,11 +11,6 @@ module dycore_mod
   private
 
   public dycore_type
-  public wave_speed_x
-  public wave_speed_y
-  public flux_x
-  public flux_y
-  public raw_to_cons
 
   type dycore_type
     logical :: initialized = .false.
@@ -24,11 +18,11 @@ module dycore_mod
     type(static_type), allocatable :: static
     type(state_type), allocatable :: state(:)
   contains
-    procedure :: init             => dycore_init
-    procedure :: calc_contra_wind => dycore_calc_contra_wind
-    procedure :: calc_sph_wind    => dycore_calc_sph_wind
-    procedure :: calc_tend        => dycore_calc_tend
-    procedure :: clear            => dycore_clear
+    procedure :: init                    => dycore_init
+    procedure :: calc_contravariant_wind => dycore_calc_contravariant_wind
+    procedure :: calc_spherical_wind     => dycore_calc_spherical_wind
+    procedure :: calc_swm_tendencies     => dycore_calc_swm_tendencies
+    procedure :: clear                   => dycore_clear
     final :: dycore_final
   end type dycore_type
 
@@ -54,23 +48,11 @@ contains
       call this%state(i)%init(mesh, model_type)
     end do
 
-    select case (model_type)
-    case ('swm')
-      wave_speed_x => swm_wave_speed_x
-      wave_speed_y => swm_wave_speed_y
-      flux_x       => swm_flux_x
-      flux_y       => swm_flux_y
-      sources      => swm_sources
-      raw_to_cons  => swm_raw_to_cons
-      before_recon => swm_before_recon
-      after_flux   => swm_after_flux
-    end select
-
     this%initialized = .true.
 
   end subroutine dycore_init
 
-  subroutine dycore_calc_contra_wind(this, itime)
+  subroutine dycore_calc_contravariant_wind(this, itime)
 
     class(dycore_type), intent(in) :: this
     integer, intent(in) :: itime
@@ -88,9 +70,9 @@ contains
     end do
     end associate
 
-  end subroutine dycore_calc_contra_wind
+  end subroutine dycore_calc_contravariant_wind
 
-  subroutine dycore_calc_sph_wind(this, itime)
+  subroutine dycore_calc_spherical_wind(this, itime)
 
     class(dycore_type), intent(in) :: this
     integer, intent(in) :: itime
@@ -108,25 +90,35 @@ contains
     end do
     end associate
 
-  end subroutine dycore_calc_sph_wind
+  end subroutine dycore_calc_spherical_wind
 
-  subroutine dycore_calc_tend(this, itime)
+  subroutine dycore_calc_swm_tendencies(this, itime)
 
-    class(dycore_type), intent(in) :: this
+    class(dycore_type), intent(inout) :: this
     integer, intent(in) :: itime
 
-    integer i, j, k
+    real(r8) flux(this%state(itime)%nvar)
+    real(r8) ql  (this%state(itime)%nvar)
+    real(r8) qr  (this%state(itime)%nvar)
+    integer i, j, k, e
 
     associate (mesh => this%mesh, state => this%state(itime))
+    call swm_before_reconstruct(state, this%static)
+    call reconstruct(state)
     do k = mesh%kds, mesh%kde
       do j = mesh%jds, mesh%jde
         do i = mesh%ids, mesh%ide
+          do e = mesh%pes(left), mesh%pee(left)
+            ql = state%qr(i-1,j,k,:)
+            qr = state%ql(i  ,j,k,:)
+            flux = riemann_solver(mesh%iG(:,:,e,i,j), mesh%J(e,i,j), ql, qr, swm_wave_speed_x, swm_flux_x)
+          end do
         end do
       end do
     end do
     end associate
 
-  end subroutine dycore_calc_tend
+  end subroutine dycore_calc_swm_tendencies
 
   subroutine dycore_clear(this)
 
@@ -136,9 +128,6 @@ contains
 
     if (allocated(this%static)) deallocate(this%static)
     if (allocated(this%state )) deallocate(this%state )
-
-    nullify(wave_speed_x)
-    nullify(wave_speed_y)
 
     this%initialized = .false.
 

@@ -43,7 +43,6 @@ set(sources
   src/fv_mod.F90
   src/swm_mod.F90
   src/weno_mod.F90
-  src/dycore_interfaces_mod.F90
   src/dycore_mod.F90
   src/history_mod.F90
   src/gamil_params_mod.F90

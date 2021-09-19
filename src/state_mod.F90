@@ -24,6 +24,7 @@ module state_mod
     real(r8), pointer, dimension(:,:,:,:) :: qb
     real(r8), pointer, dimension(:,:,:,:) :: fx
     real(r8), pointer, dimension(:,:,:,:) :: fy
+    real(r8), pointer, dimension(:,:,:,:) :: dqdt
   contains
     procedure :: init  => state_init
     procedure :: clear => state_clear
@@ -60,6 +61,9 @@ contains
       call this%array%add_var('q1', loc='CA:LQ:RQ:TQ:BQ', with_halo='T:T:T:T:T', fill_halo='T:F:F:F:F', tag='fcst')
       call this%array%add_var('q2', loc='CA:LQ:RQ:TQ:BQ', with_halo='T:T:T:T:T', fill_halo='T:F:F:F:F', tag='fcst')
       call this%array%add_var('q2', loc='CA:LQ:RQ:TQ:BQ', with_halo='T:T:T:T:T', fill_halo='T:F:F:F:F', tag='fcst')
+      call this%array%add_var('dq1dt', loc='CA', tag='tend')
+      call this%array%add_var('dq2dt', loc='CA', tag='tend')
+      call this%array%add_var('dq3dt', loc='CA', tag='tend')
     end select
 
     call this%array%add_var('fx1', loc='LQ:BQ', with_halo='T:T', fill_halo='F:F', tag='fx')
@@ -85,6 +89,8 @@ contains
     call this%array%get_array(this%qr, tag='fcst', loc='RQ')
     call this%array%get_array(this%qt, tag='fcst', loc='TQ')
     call this%array%get_array(this%qb, tag='fcst', loc='BQ')
+
+    call this%array%get_array(this%dqdt, tag='tend', loc='CA')
 
     call this%array%get_array(this%fx, tag='fx'  , loc='LQ')
     call this%array%get_array(this%fy, tag='fy'  , loc='BQ')

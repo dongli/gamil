@@ -4,6 +4,7 @@ module test_swm_mz_mod
   use kinds_mod
   use const_mod
   use dycore_mod
+  use swm_mod
   use latlon_process_mod
   use latlon_parallel_mod
 
@@ -53,8 +54,8 @@ contains
       end do
     end do
     call fill_halo(static%array)
-    call dycore%calc_contra_wind(1)
-    call raw_to_cons(state, static)
+    call dycore%calc_contravariant_wind(1)
+    call swm_raw_to_conservative(state, static)
     end associate
 
   end subroutine test_swm_mz_set_ic
