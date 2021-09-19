@@ -205,9 +205,9 @@ contains
 
     class(latlon_array_type), intent(inout) :: this
     character(*), intent(in) :: name
-    character(*), intent(in) :: long_name
-    character(*), intent(in) :: units
-    character(*), intent(in) :: loc
+    character(*), intent(in), optional :: long_name
+    character(*), intent(in), optional :: units
+    character(*), intent(in), optional :: loc
     character(*), intent(in), optional :: tag
     character(*), intent(in), optional :: output
     character(*), intent(in), optional :: with_halo

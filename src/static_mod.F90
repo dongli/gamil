@@ -9,7 +9,7 @@ module static_mod
   type static_type
     logical :: initialized = .false.
     type(latlon_array_type), allocatable :: array
-    real(r8), pointer, dimension(:,:) :: gzs
+    real(r8), pointer, dimension(:,:) :: zs
   contains
     procedure :: init     => static_init
     procedure :: clear    => static_clear
@@ -28,10 +28,10 @@ contains
     allocate(this%array)
 
     call this%array%init(mesh)
-    call this%array%add_var('gzs', 'Surface geopotential', 'ms s-2', loc='CA', with_halo='T', fill_halo='T', output='T', only_2d=.true.)
+    call this%array%add_var('zs', 'Surface height', 'm', loc='CA', with_halo='T', fill_halo='T', output='T', only_2d=.true.)
     call this%array%allocate_arrays()
 
-    call this%array%get_array(this%gzs, var_name='gzs', loc='CA')
+    call this%array%get_array(this%zs, var_name='zs', loc='CA')
 
     this%initialized = .true.
 

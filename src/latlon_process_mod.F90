@@ -148,7 +148,8 @@ contains
     call round_robin(proc%cart_dims(1), proc%cart_coords(1), nx, proc%nx, proc%is, proc%ie)
     call round_robin(proc%cart_dims(2), proc%cart_coords(2), ny, proc%ny, proc%js, proc%je)
 
-    call mesh%init(nx, ny, nz, dx=pi2/nx, dy=pi/(ny-1), hwx=hwx, hwy=hwy, neq=neq, r=r, &
+    ! NOTE: We do not include the Poles as a cell.
+    call mesh%init(nx, ny, nz, dx=pi2/nx, dy=pi/ny, hwx=hwx, hwy=hwy, neq=neq, r=r, &
                    ids=proc%is, ide=proc%ie, jds=proc%js, jde=proc%je)
 
     call this%ngb(left        )%init(left        , hwx, hwy, mesh%ims    , mesh%ids - 1, mesh%jds    , mesh%jde    )

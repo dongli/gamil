@@ -31,7 +31,7 @@ contains
     call gamil_params_init(namelist)
     call proc%init()
     call proc%decomp_domain(mesh, nx, ny, nz, hwx=2, hwy=2, neq=1, r=radius)
-    call dycore%init(mesh)
+    call dycore%init(mesh, model_type)
     call history_init(case_name, dycore)
 
   end subroutine gamil_init

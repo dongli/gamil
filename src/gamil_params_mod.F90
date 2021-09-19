@@ -4,7 +4,10 @@ module gamil_params_mod
 
   implicit none
 
-  character(30) :: case_name = ''
+  character(30) :: case_name      = ''
+  character(10) :: model_type     = 'swm'
+  character(30) :: recon_h_scheme = 'weno5'
+  character(30) :: recon_v_scheme = 'weno5'
 
   integer :: nx = 0
   integer :: ny = 0
@@ -16,6 +19,7 @@ module gamil_params_mod
 
   namelist /gamil_control/ &
     case_name            , &
+    model_type           , &
     nx, ny, nz           , &
     reduce_factors
 

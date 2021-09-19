@@ -20,15 +20,15 @@ contains
     type(dycore_type), intent(inout), target :: dycore
 
     real(r8) lon, lat, cos_lat, sin_lat, cos_lon, sin_lon, cos_alpha, sin_alpha, dlon, d
-    real(r8) alpha, u0, gz0, lon0, lat0, gzs0, R
+    real(r8) alpha, u0, z0, lon0, lat0, zs0, R
     integer i, j, k
 
     alpha  = 0.0
     u0     = 20.0
-    gz0    = 5960.0 * g
+    z0     = 5960.0
     lon0   = pi * 1.5
     lat0   = pi / 6.0
-    gzs0   = 2000.0 * g
+    zs0    = 2000.0
     R      = pi / 9.0
     cos_alpha = cos(alpha)
     sin_alpha = sin(alpha)
@@ -46,14 +46,15 @@ contains
         cos_lon = cos(lon)
         sin_lon = sin(lon)
 
-        static%gzs(i,j) = gzs0 * (1.0 - d / R)
-        state%u (i,j,1) = u0 * (cos_lat * cos_alpha + cos_lon * sin_lat * sin_alpha)
-        state%v (i,j,1) = - u0 * sin_lon * sin_alpha
-        state%gz(i,j,1) = gz0 - (mesh%r * omega * u0 + u0**2 * 0.5) * (sin_lat * cos_alpha - cos_lon * cos_lat * sin_alpha)**2
+        static%zs(i,j)   = zs0 * (1.0 - d / R)
+        state%u(i,j,1) = u0 * (cos_lat * cos_alpha + cos_lon * sin_lat * sin_alpha)
+        state%v(i,j,1) = - u0 * sin_lon * sin_alpha
+        state%h(i,j,1) = z0 - (mesh%r * omega * u0 + u0**2 * 0.5) * (sin_lat * cos_alpha - cos_lon * cos_lat * sin_alpha)**2
       end do
     end do
     call fill_halo(static%array)
-    call fill_halo(state %array)
+    call dycore%calc_contra_wind(1)
+    call raw_to_cons(state, static)
     end associate
 
   end subroutine test_swm_mz_set_ic

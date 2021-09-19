@@ -65,9 +65,9 @@ contains
 
     class(var_stack_type), intent(inout) :: this
     character(*), intent(in) :: name
-    character(*), intent(in) :: long_name
-    character(*), intent(in) :: units
-    character(*), intent(in) :: loc
+    character(*), intent(in), optional :: long_name
+    character(*), intent(in), optional :: units
+    character(*), intent(in), optional :: loc
     character(*), intent(in), optional :: tag
     character(*), intent(in), optional :: with_halo
     character(*), intent(in), optional :: fill_halo
@@ -97,15 +97,19 @@ contains
     loc_is = 1
     halo_i = 1
     do i = this%size - n + 1, this%size
-      this%var_info(i)%name      = name
-      this%var_info(i)%long_name = long_name
-      this%var_info(i)%units     = units
-      this%var_info(i)%only_2d   = merge(only_2d, .false., present(only_2d))
+      this%var_info(i)%name = name
+      this%var_info(i)%only_2d = merge(only_2d, .false., present(only_2d))
       loc_ie = loc_is + index(loc(loc_is:len_trim(loc)), ':') - 2
       loc_ie = merge(len_trim(loc), loc_ie, loc_ie < loc_is)
-      this%var_info(i)%loc       = loc(loc_is:loc_ie)
+      this%var_info(i)%loc = loc(loc_is:loc_ie)
+      if (present(long_name)) then
+        this%var_info(i)%long_name = long_name
+      end if
+      if (present(units)) then
+        this%var_info(i)%units = units
+      end if
       if (present(tag)) then
-        this%var_info(i)%tag     = tag
+        this%var_info(i)%tag = tag
       end if
       if (present(with_halo)) then
         this%var_info(i)%with_halo = with_halo(halo_i:halo_i) == 'T'

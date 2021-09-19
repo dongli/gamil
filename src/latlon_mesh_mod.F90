@@ -42,7 +42,8 @@ module latlon_mesh_mod
     real(r8), allocatable, dimension(    :,:,:) :: lat
     real(r8), allocatable, dimension(:,:,:,:,:) ::  G
     real(r8), allocatable, dimension(:,:,:,:,:) :: iG
-    real(r8), allocatable, dimension(    :,:,:) ::  J
+    real(r8), allocatable, dimension(    :,:,:) ::  J   ! Jacobian (e.g., sqrt(det(G)))
+    real(r8), allocatable, dimension(:,:,:,:,:) :: CS   ! Christoffel symbols
   contains
     procedure :: init        => latlon_mesh_init
     procedure :: set_metrics => latlon_mesh_set_metrics
@@ -134,6 +135,7 @@ contains
     allocate(this%G  (3,3,this%npt,this%ims:this%ime,this%jms:this%jme))
     allocate(this%iG (3,3,this%npt,this%ims:this%ime,this%jms:this%jme))
     allocate(this%J  (    this%npt,this%ims:this%ime,this%jms:this%jme))
+    allocate(this%CS (3,3,3       ,this%ims:this%ime,this%jms:this%jme))
 
     if (this%neq == 1) then
       this%xeq = 0.5_r8
@@ -162,8 +164,8 @@ contains
           !   o---------------o
           !
           this%pc = 1
-          this%lon(1,i,j) =          (i - 1) * this%dx
-          this%lat(1,i,j) = -pi0p5 + (j - 1) * this%dy
+          this%lon(1,i,j) = this%xmin + (i - 0.5_r8) * this%dx
+          this%lat(1,i,j) = this%ymin + (j - 0.5_r8) * this%dy
           ! Vertices
           ! 5 o---------------o 4
           !   |               |
@@ -277,6 +279,9 @@ contains
         this%iG(2,2,p,i,j) = 1.0_r8 / this%G(2,2,p,i,j)
         this%iG(3,3,p,i,j) = 1.0_r8 / this%G(3,3,p,i,j)
         this% J(    p,i,j) = r**2 * cos(lat)
+        this%CS(1,2,1,i,j) = -tan(lat)
+        this%CS(2,1,1,i,j) = -tan(lat)
+        this%CS(1,1,2,i,j) = sin(lat) * cos(lat)
       end do
     end do
 
@@ -327,6 +332,7 @@ contains
     if (allocated(this%G  )) deallocate(this%G  )
     if (allocated(this%iG )) deallocate(this%iG )
     if (allocated(this%J  )) deallocate(this%J  )
+    if (allocated(this%CS )) deallocate(this%CS )
 
   end subroutine latlon_mesh_clear
 
