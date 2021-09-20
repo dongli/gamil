@@ -14,6 +14,14 @@ module test_swm_mz_mod
 
   public test_swm_mz_set_ic
 
+  real(r8), parameter :: alpha = 0.0
+  real(r8), parameter :: u0    = 20.0
+  real(r8), parameter :: z0    = 5960.0
+  real(r8), parameter :: lon0  = pi * 1.5
+  real(r8), parameter :: lat0  = pi / 6.0
+  real(r8), parameter :: zs0   = 2000.0
+  real(r8), parameter :: R     = pi / 9.0
+
 contains
 
   subroutine test_swm_mz_set_ic(dycore)
@@ -21,16 +29,8 @@ contains
     type(dycore_type), intent(inout), target :: dycore
 
     real(r8) lon, lat, cos_lat, sin_lat, cos_lon, sin_lon, cos_alpha, sin_alpha, dlon, d
-    real(r8) alpha, u0, z0, lon0, lat0, zs0, R
-    integer i, j, k
+    integer i, j
 
-    alpha  = 0.0
-    u0     = 20.0
-    z0     = 5960.0
-    lon0   = pi * 1.5
-    lat0   = pi / 6.0
-    zs0    = 2000.0
-    R      = pi / 9.0
     cos_alpha = cos(alpha)
     sin_alpha = sin(alpha)
 

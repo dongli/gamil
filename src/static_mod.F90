@@ -33,8 +33,8 @@ contains
 
     call this%array%init(mesh)
     call this%array%add_var('zs', 'Surface height', 'm', loc='CA', with_halo='T', fill_halo='T', output='T', only_2d=.true.)
-    call this%array%add_var('f1', loc='C')
-    call this%array%add_var('f2', loc='C')
+    call this%array%add_var('f1', loc='C', only_2d=.true.)
+    call this%array%add_var('f2', loc='C', only_2d=.true.)
     call this%array%allocate_arrays()
 
     call this%array%get_array(this%zs, var_name='zs', loc='CA')

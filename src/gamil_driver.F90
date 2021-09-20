@@ -2,6 +2,7 @@ program gamil_driver
 
   use gamil_mod
   use test_swm_mz_mod
+  use test_swm_rh_mod
 
   implicit none
 
@@ -11,7 +12,7 @@ program gamil_driver
 
   call gamil_init(namelist)
 
-  call test_swm_mz_set_ic(dycore)
+  call test_swm_rh_set_ic(dycore)
 
   call gamil_run()
 

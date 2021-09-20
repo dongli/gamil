@@ -72,7 +72,7 @@ contains
     call MPI_COMM_SIZE(this%comm, this%np, ierr)
     call MPI_COMM_RANK(this%comm, this%id, ierr)
 
-    call log_notice('Initialize MPI calling.', pid=this%id)
+    call log_notice('Initialize MPI environment.', pid=this%id)
 
     if (merge(npx * npy == this%np, .false., present(npx) .and. present(npy))) then
       this%cart_dims = [npx, npy]
@@ -180,7 +180,7 @@ contains
 
     if (this%mpi_master) then
       call MPI_FINALIZE(ierr)
-      call log_notice('Finalize MPI calling.', pid=this%id)
+      call log_notice('Finalize MPI environment.', pid=this%id)
     end if
 
   end subroutine latlon_process_final

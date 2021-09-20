@@ -803,6 +803,7 @@ contains
     end if
     i = this%var_idx(var_name, loc)
     call this%get_array(ptr, this%var_stack%var_info(i))
+    if (.not. associated(ptr)) call log_error('Unable to get array "' // trim(var_name) // '"!', __FILE__, __LINE__, proc%id)
 
   end subroutine latlon_array_get_array_2d_2
 

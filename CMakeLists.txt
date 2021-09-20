@@ -49,6 +49,7 @@ set(sources
   src/gamil_params_mod.F90
   src/gamil_mod.F90
   src/test_swm_mz_mod.F90
+  src/test_swm_rh_mod.F90
 )
 
 add_library(gamil ${sources})
