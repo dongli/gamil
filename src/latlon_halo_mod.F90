@@ -64,28 +64,28 @@ contains
     ! NOTE: MPI array index starts from zero.
     select case (orient)
     case (left)
-      this%send_subarray_start = [hwx         ,hwy          ,0 ]
-      this%recv_subarray_start = [0           ,hwy          ,0 ]
-      this%send_subarray_size  = [hwx         ,ny           ,nz]
+      this%send_subarray_start = [ids      -ims,jds      -jms,0 ]
+      this%recv_subarray_start = [ids-hwx+1-ims,jds      -jms,0 ]
+      this%send_subarray_size  = [hwx          ,ny           ,nz]
       this%recv_subarray_size  = [hwx          ,ny           ,nz]
     case (left_bottom)
-      this%send_subarray_start = [hwx          ,hwy          ,0 ]
-      this%recv_subarray_start = [0            ,0            ,0 ]
+      this%send_subarray_start = [ids      -ims,jds      -jms,0 ]
+      this%recv_subarray_start = [ids-hwx+1-ims,jds-hwy+1-jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (left_top)
-      this%send_subarray_start = [hwx          ,jde-hwy+1-jms,0 ]
-      this%recv_subarray_start = [0            ,jde    +1-jms,0 ]
+      this%send_subarray_start = [ids      -ims,jde-hwy+1-jms,0 ]
+      this%recv_subarray_start = [ids-hwx+1-ims,jde    +1-jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (right)
-      this%send_subarray_start = [ide-hwx+1-ims,hwy          ,0 ]
-      this%recv_subarray_start = [ide    +1-ims,hwy          ,0 ]
+      this%send_subarray_start = [ide-hwx+1-ims,jds      -jms,0 ]
+      this%recv_subarray_start = [ide    +1-ims,jds      -jms,0 ]
       this%send_subarray_size  = [hwx          ,ny           ,nz]
       this%recv_subarray_size  = [hwx          ,ny           ,nz]
     case (right_bottom)
-      this%send_subarray_start = [ide-hwx+1-ims,hwy          ,0 ]
-      this%recv_subarray_start = [ide    +1-ims,0            ,0 ]
+      this%send_subarray_start = [ide-hwx+1-ims,jds      -jms,0 ]
+      this%recv_subarray_start = [ide    +1-ims,jds-hwy+1-jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (right_top)
@@ -94,13 +94,13 @@ contains
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (top)
-      this%send_subarray_start = [hwx          ,jde-hwy+1-jms,0 ]
-      this%recv_subarray_start = [hwx          ,jde    +1-jms,0 ]
+      this%send_subarray_start = [ids      -ims,jde-hwy+1-jms,0 ]
+      this%recv_subarray_start = [ids      -ims,jde    +1-jms,0 ]
       this%send_subarray_size  = [nx           ,hwy          ,nz]
       this%recv_subarray_size  = [nx           ,hwy          ,nz]
     case (bottom)
-      this%send_subarray_start = [hwx          ,hwy          ,0 ]
-      this%recv_subarray_start = [hwx          ,0            ,0 ]
+      this%send_subarray_start = [ids      -ims,jds      -jms,0 ]
+      this%recv_subarray_start = [ids      -ims,jds-hwy+1-jms,0 ]
       this%send_subarray_size  = [nx           ,hwy          ,nz]
       this%recv_subarray_size  = [nx           ,hwy          ,nz]
     end select

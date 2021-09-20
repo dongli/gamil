@@ -28,6 +28,11 @@ module fv_mod
       real(r8), intent(in) :: q(:)
       real(r8) flux_interface(size(q))
     end function flux_interface
+    pure real(r8) function reconstruct_interface(dir, q)
+      import r8
+      integer , intent(in) :: dir
+      real(r8), intent(in) :: q(:)
+    end function reconstruct_interface
     pure function riemann_solver_interface(iG, J, ql, qr, wave_speed, flux)
       import r8, wave_speed_interface, flux_interface
       real(r8), intent(in) :: iG(3,3)
@@ -40,6 +45,7 @@ module fv_mod
     end function riemann_solver_interface
   end interface
 
+  procedure(reconstruct_interface   ), pointer :: reconstruct    => null()
   procedure(riemann_solver_interface), pointer :: riemann_solver => null()
 
 contains
@@ -48,46 +54,16 @@ contains
 
     character(*), intent(in) :: riemann_solver_type
 
+    select case (recon_h_scheme)
+    case ('weno5')
+      reconstruct => weno5
+    end select
     select case (riemann_solver_type)
     case ('llf')
       riemann_solver => riemann_solver_llf
     end select
 
   end subroutine fv_init
-
-  subroutine reconstruct(state)
-
-    type(state_type), intent(inout) :: state
-
-    integer i, j, k, l
-
-    associate (mesh => state%mesh)
-    select case (recon_h_scheme)
-    case ('weno5')
-      !         qt
-      !     ____x____
-      !    |         |
-      !    |         |
-      ! ql x    o    x qr
-      !    |         |
-      !    |____x____|
-      !         qb
-      do l = 1, state%nvar
-        do k = mesh%kds, mesh%kde
-          do j = mesh%jds, mesh%jde
-            do i = mesh%ids, mesh%ide
-              state%ql(i,j,k,l) = weno5(-1, state%q(i-2:i+2,j,k,l))
-              state%qr(i,j,k,l) = weno5( 1, state%q(i-2:i+2,j,k,l))
-              state%qb(i,j,k,l) = weno5(-1, state%q(i,j-2:j+2,k,l))
-              state%qt(i,j,k,l) = weno5( 1, state%q(i,j-2:j+2,k,l))
-            end do
-          end do
-        end do
-      end do
-    end select
-    end associate
-
-  end subroutine reconstruct
 
   pure function riemann_solver_llf(iG, J, ql, qr, wave_speed, flux)
 

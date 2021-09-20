@@ -93,7 +93,7 @@ contains
 
   end subroutine latlon_process_init
 
-  subroutine latlon_process_decomp_domain(this, mesh, nx, ny, nz, hwx, hwy, neq, r)
+  subroutine latlon_process_decomp_domain(this, mesh, nx, ny, nz, hwx, hwy, nw, neq, r)
 
     class(latlon_process_type), intent(inout) :: this
     type(latlon_mesh_type), intent(inout) :: mesh
@@ -102,6 +102,7 @@ contains
     integer, intent(in) :: nz
     integer, intent(in) :: hwx
     integer, intent(in) :: hwy
+    integer, intent(in) :: nw
     integer, intent(in) :: neq
     real(r8), intent(in) :: r
 
@@ -149,7 +150,7 @@ contains
     call round_robin(proc%cart_dims(2), proc%cart_coords(2), ny, proc%ny, proc%js, proc%je)
 
     ! NOTE: We do not include the Poles as a cell.
-    call mesh%init(nx, ny, nz, dx=pi2/nx, dy=pi/ny, hwx=hwx, hwy=hwy, neq=neq, r=r, &
+    call mesh%init(nx, ny, nz, dx=pi2/nx, dy=pi/ny, hwx=hwx, hwy=hwy, nw=nw, neq=neq, r=r, &
                    ids=proc%is, ide=proc%ie, jds=proc%js, jde=proc%je)
 
     call this%ngb(left        )%init(left        , hwx, hwy, mesh%ims    , mesh%ids - 1, mesh%jds    , mesh%jde    )

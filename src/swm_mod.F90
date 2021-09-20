@@ -16,8 +16,6 @@ module swm_mod
   public swm_flux_y
   public swm_sources
   public swm_raw_to_conservative
-  public swm_before_reconstruct
-  public swm_after_riemann_solver
 
 contains
 
@@ -87,13 +85,13 @@ contains
 
   end function swm_flux_y
 
-  pure function swm_sources(iG, J, f, CS, q, zs, dhdx, dhdy)
+  pure function swm_sources(iG, J, CS, f, q, zs, dhdx, dhdy)
 
     real(r8), intent(in) :: iG(3,3)
     real(r8), intent(in) :: J
     real(r8), intent(in) :: CS(3,3,3)
     real(r8), intent(in) :: f
-    real(r8), intent(in) :: q(3)
+    real(r8), intent(in) :: q(:)
     real(r8), intent(in) :: zs
     real(r8), intent(in) :: dhdx
     real(r8), intent(in) :: dhdy
@@ -133,14 +131,13 @@ contains
     
     integer i, j, k
 
+    k = 1
     associate (mesh => state%mesh)
-    do k = mesh%kds, mesh%kde
-      do j = mesh%jds, mesh%jde
-        do i = mesh%ids, mesh%ide
-          state%q(i,j,k,1) = mesh%J(1,i,j) * (state%h(i,j,k) - static%zs(i,j))
-          state%q(i,j,k,2) = state%q(i,j,k,1) * state%uc(i,j,k)
-          state%q(i,k,k,3) = state%q(i,j,k,1) * state%vc(i,j,k)
-        end do
+    do j = mesh%jds, mesh%jde
+      do i = mesh%ids, mesh%ide
+        state%q(i,j,k,1) = mesh%J(1,i,j) * (state%h(i,j,k) - static%zs(i,j))
+        state%q(i,j,k,2) = state%q(i,j,k,1) * state%uc(i,j,k)
+        state%q(i,k,k,3) = state%q(i,j,k,1) * state%vc(i,j,k)
       end do
     end do
     end associate
@@ -148,43 +145,5 @@ contains
     call fill_halo(state%array)
 
   end subroutine swm_raw_to_conservative
-
-  subroutine swm_before_reconstruct(state, static)
-
-    type(state_type ), intent(inout) :: state
-    type(static_type), intent(in   ) :: static
-
-    integer i, j, k
-
-    associate (mesh => state%mesh)
-    do k = mesh%kds, mesh%kde
-      do j = mesh%jms, mesh%jme
-        do i = mesh%ims, mesh%ime
-          state%q(i,j,k,1) = state%q(i,j,k,1) + mesh%J(1,i,j) * static%zs(i,j)
-        end do
-      end do
-    end do
-    end associate
-
-  end subroutine swm_before_reconstruct
-
-  subroutine swm_after_riemann_solver(state, static)
-
-    type(state_type ), intent(inout) :: state
-    type(static_type), intent(in   ) :: static
-
-    integer i, j, k
-
-    associate (mesh => state%mesh)
-    do k = mesh%kds, mesh%kde
-      do j = mesh%jms, mesh%jme
-        do i = mesh%ims, mesh%ime
-          state%q(i,j,k,1) = state%q(i,j,k,1) - mesh%J(1,i,j) * static%zs(i,j)
-        end do
-      end do
-    end do
-    end associate
-
-  end subroutine swm_after_riemann_solver
 
 end module swm_mod

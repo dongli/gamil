@@ -231,9 +231,10 @@ contains
 
   end function latlon_array_var_idx
 
-  subroutine latlon_array_allocate_arrays(this)
+  subroutine latlon_array_allocate_arrays(this, fill_value)
 
     class(latlon_array_type), intent(inout) :: this
+    real(r8), intent(in), optional :: fill_value
 
     integer i
     integer n_2d_c_h, n_2d_c, n_3d_c_h, n_3d_c, n_2d_cq_h, n_2d_cq, n_3d_cq_h, n_3d_cq
@@ -246,8 +247,11 @@ contains
     integer n_3d_d_h, n_3d_d, n_3d_dq_h, n_3d_dq
     integer ims, ime, ids, ide, jms, jme, jds, jde, kms, kme
     integer pqs, pqe, pes, pee
+    real(r8) fill_value_
 
     call this%var_stack%reorder()
+
+    fill_value_ = merge(fill_value, 0.0_r8, present(fill_value))
 
     n_2d_c_h = 0; n_2d_c = 0; n_3d_c_h = 0; n_3d_c = 0; n_2d_cq_h = 0; n_2d_cq = 0; n_3d_cq_h = 0; n_3d_cq = 0
     n_2d_l_h = 0; n_2d_l = 0; n_3d_l_h = 0; n_3d_l = 0; n_2d_lq_h = 0; n_2d_lq = 0; n_3d_lq_h = 0; n_3d_lq = 0
@@ -500,225 +504,225 @@ contains
     ! Center
     if (n_2d_c_h > 0) then
       allocate(this%a_2d_c_h(ims:ime,jms:jme,n_2d_c_h))
-      this%a_2d_c_h = 0
+      this%a_2d_c_h = fill_value_
     end if
     if (n_3d_c_h > 0) then
       allocate(this%a_3d_c_h(ims:ime,jms:jme,kms:kme,n_3d_c_h))
-      this%a_3d_c_h = 0
+      this%a_3d_c_h = fill_value_
     end if
     if (n_2d_c > 0) then
       allocate(this%a_2d_c(ids:ide,jds:jde,n_2d_c))
-      this%a_2d_c = 0
+      this%a_2d_c = fill_value_
     end if
     if (n_3d_c > 0) then
       allocate(this%a_3d_c(ids:ide,jds:jde,kms:kme,n_3d_c))
-      this%a_3d_c = 0
+      this%a_3d_c = fill_value_
     end if
     if (n_2d_ca_h > 0) then
       allocate(this%a_2d_ca_h(ims:ime,jms:jme,n_2d_ca_h))
-      this%a_2d_ca_h = 0
+      this%a_2d_ca_h = fill_value_
     end if
     if (n_3d_ca_h > 0) then
       allocate(this%a_3d_ca_h(ims:ime,jms:jme,kms:kme,n_3d_ca_h))
-      this%a_3d_ca_h = 0
+      this%a_3d_ca_h = fill_value_
     end if
     if (n_2d_ca > 0) then
       allocate(this%a_2d_ca(ids:ide,jds:jde,n_2d_ca))
-      this%a_2d_ca = 0
+      this%a_2d_ca = fill_value_
     end if
     if (n_3d_ca > 0) then
       allocate(this%a_3d_ca(ids:ide,jds:jde,kms:kme,n_3d_ca))
-      this%a_3d_ca = 0
+      this%a_3d_ca = fill_value_
     end if
     if (n_2d_cq_h > 0) then
       allocate(this%a_2d_cq_h(pqs:pqe,ims:ime,jms:jme,n_2d_cq_h))
-      this%a_2d_cq_h = 0
+      this%a_2d_cq_h = fill_value_
     end if
     if (n_3d_cq_h > 0) then
       allocate(this%a_3d_cq_h(pqs:pqe,ims:ime,jms:jme,kms:kme,n_3d_cq_h))
-      this%a_3d_cq_h = 0
+      this%a_3d_cq_h = fill_value_
     end if
     if (n_2d_cq > 0) then
       allocate(this%a_2d_cq(pqs:pqe,ids:ide,jds:jde,n_2d_cq))
-      this%a_2d_cq = 0
+      this%a_2d_cq = fill_value_
     end if
     if (n_3d_cq > 0) then
       allocate(this%a_3d_cq(pqs:pqe,ids:ide,jds:jde,kms:kme,n_3d_cq))
-      this%a_3d_cq = 0
+      this%a_3d_cq = fill_value_
     end if
     ! Left edge
     if (n_2d_l_h > 0) then
       allocate(this%a_2d_l_h(ims:ime,jms:jme,n_2d_l_h))
-      this%a_2d_l_h = 0
+      this%a_2d_l_h = fill_value_
     end if
     if (n_3d_l_h > 0) then
       allocate(this%a_3d_l_h(ims:ime,jms:jme,kms:kme,n_3d_l_h))
-      this%a_3d_l_h = 0
+      this%a_3d_l_h = fill_value_
     end if
     if (n_2d_l > 0) then
       allocate(this%a_2d_l(ids:ide+1,jds:jde,n_2d_l))
-      this%a_2d_l = 0
+      this%a_2d_l = fill_value_
     end if
     if (n_3d_l > 0) then
       allocate(this%a_3d_l(ids:ide+1,jds:jde,kms:kme,n_3d_l))
-      this%a_3d_l = 0
+      this%a_3d_l = fill_value_
     end if
     pes = this%mesh%pes(left)
     pee = this%mesh%pee(left)
     if (n_2d_lq_h > 0) then
       allocate(this%a_2d_lq_h(pes:pee,ims:ime,jms:jme,n_2d_lq_h))
-      this%a_2d_lq_h = 0
+      this%a_2d_lq_h = fill_value_
     end if
     if (n_3d_lq_h > 0) then
       allocate(this%a_3d_lq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_lq_h))
-      this%a_3d_lq_h = 0
+      this%a_3d_lq_h = fill_value_
     end if
     if (n_2d_lq > 0) then
       allocate(this%a_2d_lq(pes:pee,ids:ide+1,jds:jde,n_2d_lq))
-      this%a_2d_lq = 0
+      this%a_2d_lq = fill_value_
     end if
     if (n_3d_lq > 0) then
       allocate(this%a_3d_lq(pes:pee,ids:ide+1,jds:jde,kms:kme,n_3d_lq))
-      this%a_3d_lq = 0
+      this%a_3d_lq = fill_value_
     end if
     ! Right edge
     if (n_2d_r_h > 0) then
       allocate(this%a_2d_r_h(ims:ime,jms:jme,n_2d_r_h))
-      this%a_2d_r_h = 0
+      this%a_2d_r_h = fill_value_
     end if
     if (n_3d_r_h > 0) then
       allocate(this%a_3d_r_h(ims:ime,jms:jme,kms:kme,n_3d_r_h))
-      this%a_3d_r_h = 0
+      this%a_3d_r_h = fill_value_
     end if
     if (n_2d_r > 0) then
       allocate(this%a_2d_r(ids:ide+1,jds:jde,n_2d_r))
-      this%a_2d_r = 0
+      this%a_2d_r = fill_value_
     end if
     if (n_3d_r > 0) then
       allocate(this%a_3d_r(ids:ide+1,jds:jde,kms:kme,n_3d_r))
-      this%a_3d_r = 0
+      this%a_3d_r = fill_value_
     end if
     pes = this%mesh%pes(right)
     pee = this%mesh%pee(right)
     if (n_2d_rq_h > 0) then
       allocate(this%a_2d_rq_h(pes:pee,ims:ime,jms:jme,n_2d_rq_h))
-      this%a_2d_rq_h = 0
+      this%a_2d_rq_h = fill_value_
     end if
     if (n_3d_rq_h > 0) then
       allocate(this%a_3d_rq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_rq_h))
-      this%a_3d_rq_h = 0
+      this%a_3d_rq_h = fill_value_
     end if
     if (n_2d_rq > 0) then
       allocate(this%a_2d_rq(pes:pee,ids:ide+1,jds:jde,n_2d_rq))
-      this%a_2d_rq = 0
+      this%a_2d_rq = fill_value_
     end if
     if (n_3d_rq > 0) then
       allocate(this%a_3d_rq(pes:pee,ids:ide+1,jds:jde,kms:kme,n_3d_rq))
-      this%a_3d_rq = 0
+      this%a_3d_rq = fill_value_
     end if
     ! Top edge quadtrature
     if (n_2d_t_h > 0) then
       allocate(this%a_2d_t_h(ims:ime,jms:jme,n_2d_t_h))
-      this%a_2d_t_h = 0
+      this%a_2d_t_h = fill_value_
     end if
     if (n_3d_t_h > 0) then
       allocate(this%a_3d_t_h(ims:ime,jms:jme,kms:kme,n_3d_t_h))
-      this%a_3d_t_h = 0
+      this%a_3d_t_h = fill_value_
     end if
     if (n_2d_t > 0) then
       allocate(this%a_2d_t(ids:ide,jds:jde+1,n_2d_t))
-      this%a_2d_t = 0
+      this%a_2d_t = fill_value_
     end if
     if (n_3d_t > 0) then
       allocate(this%a_3d_t(ids:ide,jds:jde+1,kms:kme,n_3d_t))
-      this%a_3d_t = 0
+      this%a_3d_t = fill_value_
     end if
     pes = this%mesh%pes(top)
     pee = this%mesh%pee(top)
     if (n_2d_tq_h > 0) then
       allocate(this%a_2d_tq_h(pes:pee,ims:ime,jms:jme,n_2d_tq_h))
-      this%a_2d_tq_h = 0
+      this%a_2d_tq_h = fill_value_
     end if
     if (n_3d_tq_h > 0) then
       allocate(this%a_3d_tq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_tq_h))
-      this%a_3d_tq_h = 0
+      this%a_3d_tq_h = fill_value_
     end if
     if (n_2d_tq > 0) then
       allocate(this%a_2d_tq(pes:pee,ids:ide,jds:jde+1,n_2d_tq))
-      this%a_2d_tq = 0
+      this%a_2d_tq = fill_value_
     end if
     if (n_3d_tq > 0) then
       allocate(this%a_3d_tq(pes:pee,ids:ide,jds:jde+1,kms:kme,n_3d_tq))
-      this%a_3d_tq = 0
+      this%a_3d_tq = fill_value_
     end if
     ! Bottom cell edge quadtrature
     if (n_2d_b_h > 0) then
       allocate(this%a_2d_b_h(ims:ime,jms:jme,n_2d_b_h))
-      this%a_2d_b_h = 0
+      this%a_2d_b_h = fill_value_
     end if
     if (n_3d_b_h > 0) then
       allocate(this%a_3d_b_h(ims:ime,jms:jme,kms:kme,n_3d_b_h))
-      this%a_3d_b_h = 0
+      this%a_3d_b_h = fill_value_
     end if
     if (n_2d_b > 0) then
       allocate(this%a_2d_b(ids:ide,jds:jde+1,n_2d_b))
-      this%a_2d_b = 0
+      this%a_2d_b = fill_value_
     end if
     if (n_3d_b > 0) then
       allocate(this%a_3d_b(ids:ide,jds:jde+1,kms:kme,n_3d_b))
-      this%a_3d_b = 0
+      this%a_3d_b = fill_value_
     end if
     pes = this%mesh%pes(bottom)
     pee = this%mesh%pee(bottom)
     if (n_2d_bq_h > 0) then
       allocate(this%a_2d_bq_h(pes:pee,ims:ime,jms:jme,n_2d_bq_h))
-      this%a_2d_bq_h = 0
+      this%a_2d_bq_h = fill_value_
     end if
     if (n_3d_bq_h > 0) then
       allocate(this%a_3d_bq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_bq_h))
-      this%a_3d_bq_h = 0
+      this%a_3d_bq_h = fill_value_
     end if
     if (n_2d_bq > 0) then
       allocate(this%a_2d_bq(pes:pee,ids:ide,jds:jde+1,n_2d_bq))
-      this%a_2d_bq = 0
+      this%a_2d_bq = fill_value_
     end if
     if (n_3d_bq > 0) then
       allocate(this%a_3d_bq(pes:pee,ids:ide,jds:jde+1,kms:kme,n_3d_bq))
-      this%a_3d_bq = 0
+      this%a_3d_bq = fill_value_
     end if
     ! Up cell edge quadtrature
     if (n_3d_u_h > 0) then
       allocate(this%a_3d_u_h(ims:ime,jms:jme,kms:kme+1,n_3d_u_h))
-      this%a_3d_u_h = 0
+      this%a_3d_u_h = fill_value_
     end if
     if (n_3d_u > 0) then
       allocate(this%a_3d_u(ids:ide,jds:jde,kms:kme+1,n_3d_u))
-      this%a_3d_u = 0
+      this%a_3d_u = fill_value_
     end if
     if (n_3d_uq_h > 0) then
       allocate(this%a_3d_uq_h(this%mesh%neqv,ims:ime,jms:jme,kms:kme+1,n_3d_uq_h))
-      this%a_3d_uq_h = 0
+      this%a_3d_uq_h = fill_value_
     end if
     if (n_3d_uq > 0) then
       allocate(this%a_3d_uq(this%mesh%neqv,ids:ide,jds:jde,kms:kme+1,n_3d_uq))
-      this%a_3d_uq = 0
+      this%a_3d_uq = fill_value_
     end if
     ! Down cell edge quadtrature
     if (n_3d_d_h > 0) then
       allocate(this%a_3d_d_h(ims:ime,jms:jme,kms:kme+1,n_3d_d_h))
-      this%a_3d_d_h = 0
+      this%a_3d_d_h = fill_value_
     end if
     if (n_3d_d > 0) then
       allocate(this%a_3d_d(ids:ide,jds:jde,kms:kme+1,n_3d_d))
-      this%a_3d_d = 0
+      this%a_3d_d = fill_value_
     end if
     if (n_3d_dq_h > 0) then
       allocate(this%a_3d_dq_h(this%mesh%neqv,ims:ime,jms:jme,kms:kme+1,n_3d_dq_h))
-      this%a_3d_dq_h = 0
+      this%a_3d_dq_h = fill_value_
     end if
     if (n_3d_dq > 0) then
       allocate(this%a_3d_dq(this%mesh%neqv,ids:ide,jds:jde,kms:kme+1,n_3d_dq))
-      this%a_3d_dq = 0
+      this%a_3d_dq = fill_value_
     end if
 
   end subroutine latlon_array_allocate_arrays
@@ -945,7 +949,7 @@ contains
 
   end subroutine latlon_array_get_array_3d_1
 
-  subroutine latlon_array_get_array_3d_2(this, ptr, var_Name, loc)
+  subroutine latlon_array_get_array_3d_2(this, ptr, var_name, loc)
 
     class(latlon_array_type), intent(in) :: this
     real(r8), intent(out), pointer :: ptr(:,:,:)
@@ -959,6 +963,10 @@ contains
       return
     end if
     i = this%var_idx(var_name, loc)
+    if (i == 0) then
+      nullify(ptr)
+      return
+    end if
     call this%get_array(ptr, this%var_stack%var_info(i))
 
   end subroutine latlon_array_get_array_3d_2
@@ -1198,30 +1206,42 @@ contains
 
   end subroutine latlon_array_get_array_4d_2
 
-  subroutine latlon_array_get_array_5d(this, ptr, loc, with_halo, ivs, ive)
+  subroutine latlon_array_get_array_5d(this, ptr, loc, tag)
 
     class(latlon_array_type), intent(in), target :: this
     real(r8), intent(out), pointer :: ptr(:,:,:,:,:)
     character(*), intent(in) :: loc
-    logical, intent(in) :: with_halo
-    integer, intent(in) :: ivs
-    integer, intent(in) :: ive
+    character(*), intent(in) :: tag
+
+    integer ivs, ive, loc_is
+    logical with_halo
+
+    if (.not. this%initialized) then
+      nullify(ptr)
+      return
+    end if
+
+    ivs = 0; ive = 0; loc_is = 0
+    do i = 1, this%var_stack%size
+      associate (info => this%var_stack%var_info(i))
+      if (info%loc == loc .and. info%tag == tag) then
+        if (loc_is == 0) loc_is = i
+        if (ivs == 0) then
+          ivs = i
+          with_halo = info%with_halo
+        end if
+      else if (ivs /= 0) then
+        ive = i - 1
+        exit
+      end if
+      end associate
+    end do
+    if (ivs == 0) return
+    if (ive == 0) ive = i - 1 ! Matched variables are at tail.
+    ivs = ivs - loc_is + 1
+    ive = ive - loc_is + 1
 
     select case (loc)
-    case ('CQ')
-      if (with_halo) then
-        ptr(lbound(this%a_3d_cq_h, 1):ubound(this%a_3d_cq_h, 1), &
-            lbound(this%a_3d_cq_h, 2):ubound(this%a_3d_cq_h, 2), &
-            lbound(this%a_3d_cq_h, 3):ubound(this%a_3d_cq_h, 3), &
-            lbound(this%a_3d_cq_h, 4):ubound(this%a_3d_cq_h, 4), &
-            ivs:ive) => this%a_3d_cq_h(:,:,:,:,ivs:ive)
-      else
-        ptr(lbound(this%a_3d_cq  , 1):ubound(this%a_3d_cq  , 1), &
-            lbound(this%a_3d_cq  , 2):ubound(this%a_3d_cq  , 2), &
-            lbound(this%a_3d_cq  , 3):ubound(this%a_3d_cq  , 3), &
-            lbound(this%a_3d_cq  , 4):ubound(this%a_3d_cq  , 4), &
-            ivs:ive) => this%a_3d_cq  (:,:,:,:,ivs:ive)
-      end if
     case ('LQ')
       if (with_halo) then
         ptr(lbound(this%a_3d_lq_h, 1):ubound(this%a_3d_lq_h, 1), &

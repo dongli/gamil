@@ -20,6 +20,7 @@ module latlon_mesh_mod
     integer :: hwx = 0                                  ! Halo  width along x-axis
     integer :: hwy = 0                                  ! Halo  width along y-axis
     integer :: hwz = 0                                  ! Halo  width along z-axis
+    integer :: nw  = 0                                  ! Extra halo width for easing loop writing
     ! Point type and their indicators
     integer :: npt  = 0                                 ! Number of points in each cell (e.g., cell center, vertex)
     integer :: ncq  = 0                                 ! Number of quadrature points in cell
@@ -55,7 +56,7 @@ module latlon_mesh_mod
 
 contains
 
-  subroutine latlon_mesh_init(this, nx, ny, nz, dx, dy, rlon0, rlat0, xmin, xmax, ymin, ymax, hwx, hwy, hwz, neq, r, &
+  subroutine latlon_mesh_init(this, nx, ny, nz, dx, dy, rlon0, rlat0, xmin, xmax, ymin, ymax, hwx, hwy, hwz, nw, neq, r, &
                               ids, ide, jds, jde)
 
     class(latlon_mesh_type), intent(inout) :: this
@@ -73,6 +74,7 @@ contains
     integer , intent(in), optional :: hwx
     integer , intent(in), optional :: hwy
     integer , intent(in), optional :: hwz
+    integer , intent(in), optional :: nw
     integer , intent(in), optional :: neq
     real(r8), intent(in), optional :: r
     integer , intent(in), optional :: ids
@@ -91,17 +93,18 @@ contains
     if (present(hwx)) this%hwx = hwx
     if (present(hwy)) this%hwy = hwy
     if (present(hwz)) this%hwz = hwz
+    if (present(nw )) this%nw  = nw
     if (present(neq)) this%neq = neq
     if (present(r  )) this%r   = r
 
     this%ids = merge(ids, 1 , present(ids))
     this%ide = merge(ide, nx, present(ide))
-    this%ims = this%ids - this%hwx
-    this%ime = this%ide + this%hwx
+    this%ims = this%ids - this%hwx - this%nw
+    this%ime = this%ide + this%hwx + this%nw
     this%jds = merge(jds, 1 , present(jds))
     this%jde = merge(jde, ny, present(jde))
-    this%jms = this%jds - this%hwy
-    this%jme = this%jde + this%hwy
+    this%jms = this%jds - this%hwy - this%nw
+    this%jme = this%jde + this%hwy + this%nw
     this%kds = 1
     this%kde = nz
     this%kms = this%kds - this%hwz
