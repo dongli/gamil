@@ -48,7 +48,7 @@ contains
   pure real(r8) function weno5(dir, f) result(res)
 
     integer , intent(in) :: dir   ! Which side to reconstruct (-1: i-1/2, i: i+1/2)
-    real(r8), intent(in) :: f(5)
+    real(r8), intent(in) :: f(:)
 
     real(r8), parameter :: c11 =  1.0_r8 / 3.0_r8, c12 = -7.0_r8 / 6.0_r8, c13 = 11.0_r8 / 6.0_r8
     real(r8), parameter :: c21 = -1.0_r8 / 6.0_r8, c22 =  5.0_r8 / 6.0_r8, c23 =  1.0_r8 / 3.0_r8

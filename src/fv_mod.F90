@@ -11,6 +11,7 @@ module fv_mod
 
   private
 
+  public fv_init
   public reconstruct
   public riemann_solver
 
@@ -50,8 +51,9 @@ module fv_mod
 
 contains
 
-  subroutine fv_init(riemann_solver_type)
+  subroutine fv_init(recon_h_scheme, riemann_solver_type)
 
+    character(*), intent(in) :: recon_h_scheme
     character(*), intent(in) :: riemann_solver_type
 
     select case (recon_h_scheme)

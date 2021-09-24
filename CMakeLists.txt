@@ -22,6 +22,7 @@ endif ()
 find_package(MPI)
 
 add_subdirectory(lib/container)
+add_subdirectory(lib/datetime)
 add_subdirectory(lib/string)
 add_subdirectory(lib/flogger)
 add_subdirectory(lib/fiona)
@@ -43,7 +44,7 @@ set(sources
   src/fv_mod.F90
   src/swm_mod.F90
   src/weno_mod.F90
-  src/time_schemes_mod.F90
+  src/time_mod.F90
   src/dycore_mod.F90
   src/history_mod.F90
   src/gamil_params_mod.F90
@@ -53,7 +54,7 @@ set(sources
 )
 
 add_library(gamil ${sources})
-target_link_libraries(gamil fiona)
+target_link_libraries(gamil fortran_datetime fiona)
 
 add_executable(gamil_driver.exe src/gamil_driver.F90)
 target_link_libraries(gamil_driver.exe gamil)

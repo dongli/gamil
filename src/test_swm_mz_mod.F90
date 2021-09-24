@@ -54,7 +54,6 @@ contains
       end do
     end do
     call fill_halo(static%array)
-    call dycore%calc_contravar_wind(1)
     call swm_raw_to_conservative(state, static)
     end associate
 

@@ -110,14 +110,15 @@ contains
     this%kms = this%kds - this%hwz
     this%kme = this%kde + this%hwz
     this%npt = 5 + 4 * this%neq + this%neq**2
+    this%ncq = this%neq**2
 
     if (present(xmin) .and. present(xmax)) then
       this%xmin = xmin
       this%xmax = xmax
       this%dx   = (this%xmax - this%xmin) / (this%ide - this%ids)
     else if (present(dx)) then
-      this%xmin = dx * (this%ids - 1)
-      this%xmax = dx * (this%ide - 1)
+      this%xmin = 0.5_r8 * dx + dx * (this%ids - 1) - 0.5_r8 * dx
+      this%xmax = 0.5_r8 * dx + dx * (this%ide - 1) + 0.5_r8 * dx
       this%dx   = dx
     end if
 
@@ -126,8 +127,8 @@ contains
       this%ymax = ymax
       this%dy   = (this%ymax - this%ymin) / (this%jde - this%jds)
     else if (present(dy)) then
-      this%ymin = -pi0p5 + dy * (this%jds - 1)
-      this%ymax = -pi0p5 + dy * (this%jde - 1)
+      this%ymin = -pi0p5 + 0.5_r8 * dy + dy * (this%jds - 1) - 0.5_r8 * dy
+      this%ymax = -pi0p5 + 0.5_r8 * dy + dy * (this%jde - 1) + 0.5_r8 * dy
       this%dy   = dy
     end if
 
@@ -167,8 +168,8 @@ contains
           !   o---------------o
           !
           this%pc = 1
-          this%lon(1,i,j) = this%xmin + (i - 0.5_r8) * this%dx
-          this%lat(1,i,j) = this%ymin + (j - 0.5_r8) * this%dy
+          this%lon(1,i,j) = this%xmin + (i - this%ids + 0.5_r8) * this%dx
+          this%lat(1,i,j) = this%ymin + (j - this%jds + 0.5_r8) * this%dy
           ! Vertices
           ! 5 o---------------o 4
           !   |               |
@@ -207,7 +208,7 @@ contains
           this%pes(bottom) = p
           do q1 = 1, this%neq
             this%lon(p,i,j) = this%lon(2,i,j) + this%dx * this%xeq(q1)
-            this%lat(p,i,j) = this%lat(2,j,j)
+            this%lat(p,i,j) = this%lat(2,i,j)
             p = p + 1
           end do
           this%pee(bottom) = p - 1
@@ -222,16 +223,16 @@ contains
           ! Top edge points
           this%pes(top) = p
           do q1 = 1, this%neq
-            this%lon(p,i,j) = this%lon(4,i,j) - this%dx * this%xeq(q1)
-            this%lat(p,i,j) = this%lat(4,i,j)
+            this%lon(p,i,j) = this%lon(5,i,j) + this%dx * this%xeq(q1)
+            this%lat(p,i,j) = this%lat(5,i,j)
             p = p + 1
           end do
           this%pee(top) = p - 1
           ! Left edge points
           this%pes(left) = p
           do q1 = 1, this%neq
-            this%lon(p,i,j) = this%lon(5,i,j)
-            this%lat(p,i,j) = this%lat(5,i,j) - this%dy * this%xeq(q1)
+            this%lon(p,i,j) = this%lon(2,i,j)
+            this%lat(p,i,j) = this%lat(2,i,j) + this%dy * this%xeq(q1)
             p = p + 1
           end do
           this%pee(left) = p - 1
@@ -267,24 +268,29 @@ contains
     class(latlon_mesh_type), intent(inout) :: this
     real(r8), intent(in) :: r
 
-    real(r8) lon, lat
+    real(r8) lon, lat, cos_lat, sin_lat
     integer i, j, p
 
     do j = this%jms, this%jme
       do i = this%ims, this%ime
-        p = 1
-        lon = this%lon(p,i,j)
-        lat = this%lat(p,i,j)
-        this% G(1,1,p,i,j) = (r * cos(lat))**2
-        this% G(2,2,p,i,j) = r**2
-        this% G(3,3,p,i,j) = 1.0_r8
-        this%iG(1,1,p,i,j) = 1.0_r8 / this%G(1,1,p,i,j)
-        this%iG(2,2,p,i,j) = 1.0_r8 / this%G(2,2,p,i,j)
-        this%iG(3,3,p,i,j) = 1.0_r8 / this%G(3,3,p,i,j)
-        this% J(    p,i,j) = r**2 * cos(lat)
-        this%CS(1,2,1,i,j) = -tan(lat)
-        this%CS(2,1,1,i,j) = -tan(lat)
-        this%CS(1,1,2,i,j) = sin(lat) * cos(lat)
+        do p = 1, this%npt
+          lon = this%lon(p,i,j)
+          lat = this%lat(p,i,j)
+          cos_lat = cos(lat); cos_lat = merge(0.0_r8, cos_lat, abs(cos_lat) < 1.0e-16)
+          sin_lat = sin(lat); sin_lat = merge(0.0_r8, sin_lat, abs(sin_lat) < 1.0e-16)
+          this% G(1,1,p,i,j) = (r * cos_lat)**2
+          this% G(2,2,p,i,j) = r**2
+          this% G(3,3,p,i,j) = 1.0_r8
+          this%iG(1,1,p,i,j) = 1.0_r8 / this%G(1,1,p,i,j)
+          this%iG(2,2,p,i,j) = 1.0_r8 / this%G(2,2,p,i,j)
+          this%iG(3,3,p,i,j) = 1.0_r8 / this%G(3,3,p,i,j)
+          this% J(    p,i,j) = r**2 * cos_lat
+          if (p /= 1) cycle
+          ! FIXME: Christoffel symbols are only needed on cell centers?
+          this%CS(1,2,1,i,j) = -tan(lat)
+          this%CS(2,1,1,i,j) = -tan(lat)
+          this%CS(1,1,2,i,j) =  sin(lat) * cos_lat
+        end do
       end do
     end do
 
@@ -293,13 +299,14 @@ contains
   subroutine latlon_mesh_get_params(this, ims, ime, ids, ide, nx, &
                                           jms, jme, jds, jde, ny, &
                                           kms, kme, kds, kde, nz, &
-                                          hwx, hwy, hwz, pc , neq)
+                                          hwx, hwy, hwz, pc ,     &
+                                          neq, ncq)
 
     class(latlon_mesh_type), intent(in) :: this
     integer, intent(out), optional :: ims, ime, ids, ide, nx
     integer, intent(out), optional :: jms, jme, jds, jde, ny
     integer, intent(out), optional :: kms, kme, kds, kde, nz
-    integer, intent(out), optional :: hwx, hwy, hwz, pc , neq
+    integer, intent(out), optional :: hwx, hwy, hwz, pc , neq, ncq
 
     if (present(ims)) ims = this%ims
     if (present(ime)) ime = this%ime
@@ -321,6 +328,7 @@ contains
     if (present(hwz)) hwz = this%hwz
     if (present(pc )) pc  = this%pc
     if (present(neq)) neq = this%neq
+    if (present(ncq)) ncq = this%ncq
 
   end subroutine latlon_mesh_get_params
 

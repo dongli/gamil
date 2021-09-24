@@ -55,27 +55,28 @@ contains
     type(var_info_type), intent(in) :: var_info
     type(latlon_halo_type), intent(in) :: halo
 
-    integer i, ierr
+    integer i, tag, ierr
 
     if (.not. var_info%fill_halo .or. .not. halo%initialized) return
 
     i = var_info%array_idx
+    tag = 10 * i + halo%orient
 
     select case (var_info%loc)
     case ('C')
       if (var_info%only_2d) then
-        call MPI_SEND(array%a_2d_c_h(:,:,i), 1, halo%send_type_2d, halo%proc_id, 1, &
+        call MPI_SEND(array%a_2d_c_h(:,:,i), i, halo%send_type_2d, halo%proc_id, tag, &
                       proc%comm, ierr)
       else
-        call MPI_SEND(array%a_3d_c_h(:,:,:,i), 1, halo%send_type_3d, halo%proc_id, 1, &
+        call MPI_SEND(array%a_3d_c_h(:,:,:,i), i, halo%send_type_3d, halo%proc_id, tag, &
                       proc%comm, ierr)
       end if
     case ('CA')
       if (var_info%only_2d) then
-        call MPI_SEND(array%a_2d_ca_h(:,:,i), 1, halo%send_type_2d, halo%proc_id, 1, &
+        call MPI_SEND(array%a_2d_ca_h(:,:,i), i, halo%send_type_2d, halo%proc_id, tag, &
                       proc%comm, ierr)
       else
-        call MPI_SEND(array%a_3d_ca_h(:,:,:,i), 1, halo%send_type_3d, halo%proc_id, 1, &
+        call MPI_SEND(array%a_3d_ca_h(:,:,:,i), i, halo%send_type_3d, halo%proc_id, tag, &
                       proc%comm, ierr)
       end if
     case default
@@ -90,27 +91,28 @@ contains
     type(var_info_type), intent(in) :: var_info
     type(latlon_halo_type), intent(in) :: halo
 
-    integer i, ierr
+    integer i, tag, ierr
 
     if (.not. var_info%fill_halo .or. .not. halo%initialized) return
 
     i = var_info%array_idx
+    tag = 10 * i + halo%pair_orient
 
     select case (var_info%loc)
     case ('C')
       if (var_info%only_2d) then
-        call MPI_RECV(array%a_2d_c_h(:,:,i), 1, halo%recv_type_2d, halo%proc_id, 1, &
+        call MPI_RECV(array%a_2d_c_h(:,:,i), i, halo%recv_type_2d, halo%proc_id, tag, &
                       proc%comm, MPI_STATUS_IGNORE, ierr)
       else
-        call MPI_RECV(array%a_3d_c_h(:,:,:,i), 1, halo%recv_type_3d, halo%proc_id, 1, &
+        call MPI_RECV(array%a_3d_c_h(:,:,:,i), i, halo%recv_type_3d, halo%proc_id, tag, &
                       proc%comm, MPI_STATUS_IGNORE, ierr)
       end if
     case ('CA')
       if (var_info%only_2d) then
-        call MPI_RECV(array%a_2d_ca_h(:,:,i), 1, halo%recv_type_2d, halo%proc_id, 1, &
+        call MPI_RECV(array%a_2d_ca_h(:,:,i), i, halo%recv_type_2d, halo%proc_id, tag, &
                       proc%comm, MPI_STATUS_IGNORE, ierr)
       else
-        call MPI_RECV(array%a_3d_ca_h(:,:,:,i), 1, halo%recv_type_3d, halo%proc_id, 1, &
+        call MPI_RECV(array%a_3d_ca_h(:,:,:,i), i, halo%recv_type_3d, halo%proc_id, tag, &
                       proc%comm, MPI_STATUS_IGNORE, ierr)
       end if
     case default

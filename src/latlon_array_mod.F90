@@ -245,8 +245,7 @@ contains
     integer                                     n_2d_ca_h, n_2d_ca, n_3d_ca_h, n_3d_ca
     integer n_3d_u_h, n_3d_u, n_3d_uq_h, n_3d_uq
     integer n_3d_d_h, n_3d_d, n_3d_dq_h, n_3d_dq
-    integer ims, ime, ids, ide, jms, jme, jds, jde, kms, kme
-    integer pqs, pqe, pes, pee
+    integer ims, ime, ids, ide, jms, jme, jds, jde, kms, kme, neq, ncq
     real(r8) fill_value_
 
     call this%var_stack%reorder()
@@ -262,244 +261,245 @@ contains
     n_3d_u_h = 0; n_3d_u = 0; n_3d_uq_h = 0; n_3d_uq = 0
     n_3d_d_h = 0; n_3d_d = 0; n_3d_dq_h = 0; n_3d_dq = 0
     do i = 1, this%var_stack%size
-      select case (this%var_stack%var_info(i)%loc)
+      associate (info => this%var_stack%var_info(i))
+      select case (info%loc)
       case ('C')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_c_h = n_2d_c_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_c_h
+            info%array_idx = n_2d_c_h
           else
             n_3d_c_h = n_3d_c_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_c_h
+            info%array_idx = n_3d_c_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_c = n_2d_c + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_c
+            info%array_idx = n_2d_c
           else
             n_3d_c = n_3d_c + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_c
+            info%array_idx = n_3d_c
           end if
         end if
       case ('CA')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_ca_h = n_2d_ca_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_ca_h
+            info%array_idx = n_2d_ca_h
           else
             n_3d_ca_h = n_3d_ca_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_ca_h
+            info%array_idx = n_3d_ca_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_ca = n_2d_ca + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_ca
+            info%array_idx = n_2d_ca
           else
             n_3d_ca = n_3d_ca + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_ca
+            info%array_idx = n_3d_ca
           end if
         end if
       case ('CQ')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_cq_h = n_2d_cq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_cq_h
+            info%array_idx = n_2d_cq_h
           else
             n_3d_cq_h = n_3d_cq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_cq_h
+            info%array_idx = n_3d_cq_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_cq = n_2d_cq + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_cq
+            info%array_idx = n_2d_cq
           else
             n_3d_cq = n_3d_cq + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_cq
+            info%array_idx = n_3d_cq
           end if
         end if
       case ('L')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_l_h = n_2d_l_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_l_h
+            info%array_idx = n_2d_l_h
           else
             n_3d_l_h = n_3d_l_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_l_h
+            info%array_idx = n_3d_l_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_l = n_2d_l + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_l
+            info%array_idx = n_2d_l
           else
             n_3d_l = n_3d_l + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_l
+            info%array_idx = n_3d_l
           end if
         end if
       case ('LQ')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_lq_h = n_2d_lq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_lq_h
+            info%array_idx = n_2d_lq_h
           else
             n_3d_lq_h = n_3d_lq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_lq_h
+            info%array_idx = n_3d_lq_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_lq = n_2d_lq + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_lq
+            info%array_idx = n_2d_lq
           else
             n_3d_lq = n_3d_lq + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_lq
+            info%array_idx = n_3d_lq
           end if
         end if
       case ('R')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_r_h = n_2d_r_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_r_h
+            info%array_idx = n_2d_r_h
           else
             n_3d_r_h = n_3d_r_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_r_h
+            info%array_idx = n_3d_r_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_r = n_2d_r + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_r
+            info%array_idx = n_2d_r
           else
             n_3d_r = n_3d_r + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_r
+            info%array_idx = n_3d_r
           end if
         end if
       case ('RQ')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_rq_h = n_2d_rq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_rq_h
+            info%array_idx = n_2d_rq_h
           else
             n_3d_rq_h = n_3d_rq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_rq_h
+            info%array_idx = n_3d_rq_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_rq = n_2d_rq + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_rq
+            info%array_idx = n_2d_rq
           else
             n_3d_rq = n_3d_rq + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_rq
+            info%array_idx = n_3d_rq
           end if
         end if
       case ('T')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_t_h = n_2d_t_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_t_h
+            info%array_idx = n_2d_t_h
           else
             n_3d_t_h = n_3d_t_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_t_h
+            info%array_idx = n_3d_t_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_t = n_2d_t + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_t
+            info%array_idx = n_2d_t
           else
             n_3d_t = n_3d_t + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_t
+            info%array_idx = n_3d_t
           end if
         end if
       case ('TQ')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_tq_h = n_2d_tq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_tq_h
+            info%array_idx = n_2d_tq_h
           else
             n_3d_tq_h = n_3d_tq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_tq_h
+            info%array_idx = n_3d_tq_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_tq = n_2d_tq + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_tq
+            info%array_idx = n_2d_tq
           else
             n_3d_tq = n_3d_tq + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_tq
+            info%array_idx = n_3d_tq
           end if
         end if
       case ('B')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_b_h = n_2d_b_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_b_h
+            info%array_idx = n_2d_b_h
           else
             n_3d_b_h = n_3d_b_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_b_h
+            info%array_idx = n_3d_b_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_b = n_2d_b + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_b
+            info%array_idx = n_2d_b
           else
             n_3d_b = n_3d_b + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_b
+            info%array_idx = n_3d_b
           end if
         end if
       case ('BQ')
-        if (this%var_stack%var_info(i)%with_halo) then
-          if (this%var_stack%var_info(i)%only_2d) then
+        if (info%with_halo) then
+          if (info%only_2d) then
             n_2d_bq_h = n_2d_bq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_bq_h
+            info%array_idx = n_2d_bq_h
           else
             n_3d_bq_h = n_3d_bq_h + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_bq_h
+            info%array_idx = n_3d_bq_h
           end if
         else
-          if (this%var_stack%var_info(i)%only_2d) then
+          if (info%only_2d) then
             n_2d_bq = n_2d_bq + 1
-            this%var_stack%var_info(i)%array_idx = n_2d_bq
+            info%array_idx = n_2d_bq
           else
             n_3d_bq = n_3d_bq + 1
-            this%var_stack%var_info(i)%array_idx = n_3d_bq
+            info%array_idx = n_3d_bq
           end if
         end if
       case ('U')
-        if (this%var_stack%var_info(i)%with_halo) then
+        if (info%with_halo) then
           n_3d_u_h = n_3d_u_h + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_u_h
+          info%array_idx = n_3d_u_h
         else
           n_3d_u = n_3d_u + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_u
+          info%array_idx = n_3d_u
         end if
       case ('UQ')
-        if (this%var_stack%var_info(i)%with_halo) then
+        if (info%with_halo) then
           n_3d_uq_h = n_3d_uq_h + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_uq_h
+          info%array_idx = n_3d_uq_h
         else
           n_3d_uq = n_3d_uq + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_uq
+          info%array_idx = n_3d_uq
         end if
       case ('D')
-        if (this%var_stack%var_info(i)%with_halo) then
+        if (info%with_halo) then
           n_3d_d_h = n_3d_d_h + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_d_h
+          info%array_idx = n_3d_d_h
         else
           n_3d_d = n_3d_d + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_d
+          info%array_idx = n_3d_d
         end if
       case ('DQ')
-        if (this%var_stack%var_info(i)%with_halo) then
+        if (info%with_halo) then
           n_3d_dq_h = n_3d_dq_h + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_dq_h
+          info%array_idx = n_3d_dq_h
         else
           n_3d_dq = n_3d_dq + 1
-          this%var_stack%var_info(i)%array_idx = n_3d_dq
+          info%array_idx = n_3d_dq
         end if
       end select
+      end associate
     end do
 
-    ims = this%mesh%ims; ime = this%mesh%ime; ids = this%mesh%ids; ide = this%mesh%ide
-    jms = this%mesh%jms; jme = this%mesh%jme; jds = this%mesh%jds; jde = this%mesh%jde
-    kms = this%mesh%kms; kme = this%mesh%kme
-    pqs = this%mesh%pqs; pqe = this%mesh%pqe
+    call this%mesh%get_params(ims=ims, ime=ime, ids=ids, ide=ide, &
+                              jms=jms, jme=jme, jds=jds, jde=jde, &
+                              kms=kms, kme=kme, neq=neq, ncq=ncq)
 
     ! Center
     if (n_2d_c_h > 0) then
@@ -535,19 +535,19 @@ contains
       this%a_3d_ca = fill_value_
     end if
     if (n_2d_cq_h > 0) then
-      allocate(this%a_2d_cq_h(pqs:pqe,ims:ime,jms:jme,n_2d_cq_h))
+      allocate(this%a_2d_cq_h(ncq,ims:ime,jms:jme,n_2d_cq_h)) ! NOTE: Here we use local index in the left-most dimension.
       this%a_2d_cq_h = fill_value_
     end if
     if (n_3d_cq_h > 0) then
-      allocate(this%a_3d_cq_h(pqs:pqe,ims:ime,jms:jme,kms:kme,n_3d_cq_h))
+      allocate(this%a_3d_cq_h(ncq,ims:ime,jms:jme,kms:kme,n_3d_cq_h))
       this%a_3d_cq_h = fill_value_
     end if
     if (n_2d_cq > 0) then
-      allocate(this%a_2d_cq(pqs:pqe,ids:ide,jds:jde,n_2d_cq))
+      allocate(this%a_2d_cq(ncq,ids:ide,jds:jde,n_2d_cq))
       this%a_2d_cq = fill_value_
     end if
     if (n_3d_cq > 0) then
-      allocate(this%a_3d_cq(pqs:pqe,ids:ide,jds:jde,kms:kme,n_3d_cq))
+      allocate(this%a_3d_cq(ncq,ids:ide,jds:jde,kms:kme,n_3d_cq))
       this%a_3d_cq = fill_value_
     end if
     ! Left edge
@@ -567,22 +567,20 @@ contains
       allocate(this%a_3d_l(ids:ide+1,jds:jde,kms:kme,n_3d_l))
       this%a_3d_l = fill_value_
     end if
-    pes = this%mesh%pes(left)
-    pee = this%mesh%pee(left)
     if (n_2d_lq_h > 0) then
-      allocate(this%a_2d_lq_h(pes:pee,ims:ime,jms:jme,n_2d_lq_h))
+      allocate(this%a_2d_lq_h(neq,ims:ime,jms:jme,n_2d_lq_h)) ! NOTE: Here we use local index in the left-most dimension.
       this%a_2d_lq_h = fill_value_
     end if
     if (n_3d_lq_h > 0) then
-      allocate(this%a_3d_lq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_lq_h))
+      allocate(this%a_3d_lq_h(neq,ims:ime,jms:jme,kms:kme,n_3d_lq_h))
       this%a_3d_lq_h = fill_value_
     end if
     if (n_2d_lq > 0) then
-      allocate(this%a_2d_lq(pes:pee,ids:ide+1,jds:jde,n_2d_lq))
+      allocate(this%a_2d_lq(neq,ids:ide+1,jds:jde,n_2d_lq))
       this%a_2d_lq = fill_value_
     end if
     if (n_3d_lq > 0) then
-      allocate(this%a_3d_lq(pes:pee,ids:ide+1,jds:jde,kms:kme,n_3d_lq))
+      allocate(this%a_3d_lq(neq,ids:ide+1,jds:jde,kms:kme,n_3d_lq))
       this%a_3d_lq = fill_value_
     end if
     ! Right edge
@@ -602,22 +600,20 @@ contains
       allocate(this%a_3d_r(ids:ide+1,jds:jde,kms:kme,n_3d_r))
       this%a_3d_r = fill_value_
     end if
-    pes = this%mesh%pes(right)
-    pee = this%mesh%pee(right)
     if (n_2d_rq_h > 0) then
-      allocate(this%a_2d_rq_h(pes:pee,ims:ime,jms:jme,n_2d_rq_h))
+      allocate(this%a_2d_rq_h(neq,ims:ime,jms:jme,n_2d_rq_h))
       this%a_2d_rq_h = fill_value_
     end if
     if (n_3d_rq_h > 0) then
-      allocate(this%a_3d_rq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_rq_h))
+      allocate(this%a_3d_rq_h(neq,ims:ime,jms:jme,kms:kme,n_3d_rq_h))
       this%a_3d_rq_h = fill_value_
     end if
     if (n_2d_rq > 0) then
-      allocate(this%a_2d_rq(pes:pee,ids:ide+1,jds:jde,n_2d_rq))
+      allocate(this%a_2d_rq(neq,ids:ide+1,jds:jde,n_2d_rq))
       this%a_2d_rq = fill_value_
     end if
     if (n_3d_rq > 0) then
-      allocate(this%a_3d_rq(pes:pee,ids:ide+1,jds:jde,kms:kme,n_3d_rq))
+      allocate(this%a_3d_rq(neq,ids:ide+1,jds:jde,kms:kme,n_3d_rq))
       this%a_3d_rq = fill_value_
     end if
     ! Top edge quadtrature
@@ -637,22 +633,20 @@ contains
       allocate(this%a_3d_t(ids:ide,jds:jde+1,kms:kme,n_3d_t))
       this%a_3d_t = fill_value_
     end if
-    pes = this%mesh%pes(top)
-    pee = this%mesh%pee(top)
     if (n_2d_tq_h > 0) then
-      allocate(this%a_2d_tq_h(pes:pee,ims:ime,jms:jme,n_2d_tq_h))
+      allocate(this%a_2d_tq_h(neq,ims:ime,jms:jme,n_2d_tq_h))
       this%a_2d_tq_h = fill_value_
     end if
     if (n_3d_tq_h > 0) then
-      allocate(this%a_3d_tq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_tq_h))
+      allocate(this%a_3d_tq_h(neq,ims:ime,jms:jme,kms:kme,n_3d_tq_h))
       this%a_3d_tq_h = fill_value_
     end if
     if (n_2d_tq > 0) then
-      allocate(this%a_2d_tq(pes:pee,ids:ide,jds:jde+1,n_2d_tq))
+      allocate(this%a_2d_tq(neq,ids:ide,jds:jde+1,n_2d_tq))
       this%a_2d_tq = fill_value_
     end if
     if (n_3d_tq > 0) then
-      allocate(this%a_3d_tq(pes:pee,ids:ide,jds:jde+1,kms:kme,n_3d_tq))
+      allocate(this%a_3d_tq(neq,ids:ide,jds:jde+1,kms:kme,n_3d_tq))
       this%a_3d_tq = fill_value_
     end if
     ! Bottom cell edge quadtrature
@@ -672,22 +666,20 @@ contains
       allocate(this%a_3d_b(ids:ide,jds:jde+1,kms:kme,n_3d_b))
       this%a_3d_b = fill_value_
     end if
-    pes = this%mesh%pes(bottom)
-    pee = this%mesh%pee(bottom)
     if (n_2d_bq_h > 0) then
-      allocate(this%a_2d_bq_h(pes:pee,ims:ime,jms:jme,n_2d_bq_h))
+      allocate(this%a_2d_bq_h(neq,ims:ime,jms:jme,n_2d_bq_h))
       this%a_2d_bq_h = fill_value_
     end if
     if (n_3d_bq_h > 0) then
-      allocate(this%a_3d_bq_h(pes:pee,ims:ime,jms:jme,kms:kme,n_3d_bq_h))
+      allocate(this%a_3d_bq_h(neq,ims:ime,jms:jme,kms:kme,n_3d_bq_h))
       this%a_3d_bq_h = fill_value_
     end if
     if (n_2d_bq > 0) then
-      allocate(this%a_2d_bq(pes:pee,ids:ide,jds:jde+1,n_2d_bq))
+      allocate(this%a_2d_bq(neq,ids:ide,jds:jde+1,n_2d_bq))
       this%a_2d_bq = fill_value_
     end if
     if (n_3d_bq > 0) then
-      allocate(this%a_3d_bq(pes:pee,ids:ide,jds:jde+1,kms:kme,n_3d_bq))
+      allocate(this%a_3d_bq(neq,ids:ide,jds:jde+1,kms:kme,n_3d_bq))
       this%a_3d_bq = fill_value_
     end if
     ! Up cell edge quadtrature
@@ -1076,7 +1068,7 @@ contains
     character(*), intent(in) :: loc
     character(*), intent(in) :: tag
 
-    integer ivs, ive, loc_is
+    integer is, ie, loc_is
     logical with_halo
 
     if (.not. this%initialized) then
@@ -1084,25 +1076,7 @@ contains
       return
     end if
 
-    ivs = 0; ive = 0; loc_is = 0
-    do i = 1, this%var_stack%size
-      associate (info => this%var_stack%var_info(i))
-      if (info%loc == loc .and. info%tag == tag) then
-        if (loc_is == 0) loc_is = i
-        if (ivs == 0) then
-          ivs = i
-          with_halo = info%with_halo
-        end if
-      else if (ivs /= 0) then
-        ive = i - 1
-        exit
-      end if
-      end associate
-    end do
-    if (ivs == 0) return
-    if (ive == 0) ive = i - 1 ! Matched variables are at tail.
-    ivs = ivs - loc_is + 1
-    ive = ive - loc_is + 1
+    call this%var_stack%get_idx(loc, tag, is, ie, with_halo)
 
     select case (loc)
     case ('C')
@@ -1110,96 +1084,96 @@ contains
         ptr(lbound(this%a_3d_c_h, 1):ubound(this%a_3d_c_h, 1), &
             lbound(this%a_3d_c_h, 2):ubound(this%a_3d_c_h, 2), &
             lbound(this%a_3d_c_h, 3):ubound(this%a_3d_c_h, 3), &
-            ivs:ive) => this%a_3d_c_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_c_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_c  , 1):ubound(this%a_3d_c  , 1), &
             lbound(this%a_3d_c  , 2):ubound(this%a_3d_c  , 2), &
             lbound(this%a_3d_c  , 3):ubound(this%a_3d_c  , 3), &
-            ivs:ive) => this%a_3d_c  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_c  (:,:,:,is:ie)
       end if
     case ('CA')
       if (with_halo) then
         ptr(lbound(this%a_3d_ca_h, 1):ubound(this%a_3d_ca_h, 1), &
             lbound(this%a_3d_ca_h, 2):ubound(this%a_3d_ca_h, 2), &
             lbound(this%a_3d_ca_h, 3):ubound(this%a_3d_ca_h, 3), &
-            ivs:ive) => this%a_3d_ca_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_ca_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_ca  , 1):ubound(this%a_3d_ca  , 1), &
             lbound(this%a_3d_ca  , 2):ubound(this%a_3d_ca  , 2), &
             lbound(this%a_3d_ca  , 3):ubound(this%a_3d_ca  , 3), &
-            ivs:ive) => this%a_3d_ca  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_ca  (:,:,:,is:ie)
       end if
     case ('L')
       if (with_halo) then
         ptr(lbound(this%a_3d_l_h, 1):ubound(this%a_3d_l_h, 1), &
             lbound(this%a_3d_l_h, 2):ubound(this%a_3d_l_h, 2), &
             lbound(this%a_3d_l_h, 3):ubound(this%a_3d_l_h, 3), &
-            ivs:ive) => this%a_3d_l_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_l_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_l  , 1):ubound(this%a_3d_l  , 1), &
             lbound(this%a_3d_l  , 2):ubound(this%a_3d_l  , 2), &
             lbound(this%a_3d_l  , 3):ubound(this%a_3d_l  , 3), &
-            ivs:ive) => this%a_3d_l  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_l  (:,:,:,is:ie)
       end if
     case ('R')
       if (with_halo) then
         ptr(lbound(this%a_3d_r_h, 1):ubound(this%a_3d_r_h, 1), &
             lbound(this%a_3d_r_h, 2):ubound(this%a_3d_r_h, 2), &
             lbound(this%a_3d_r_h, 3):ubound(this%a_3d_r_h, 3), &
-            ivs:ive) => this%a_3d_r_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_r_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_r  , 1):ubound(this%a_3d_r  , 1), &
             lbound(this%a_3d_r  , 2):ubound(this%a_3d_r  , 2), &
             lbound(this%a_3d_r  , 3):ubound(this%a_3d_r  , 3), &
-            ivs:ive) => this%a_3d_r  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_r  (:,:,:,is:ie)
       end if
     case ('T')
       if (with_halo) then
         ptr(lbound(this%a_3d_t_h, 1):ubound(this%a_3d_t_h, 1), &
             lbound(this%a_3d_t_h, 2):ubound(this%a_3d_t_h, 2), &
             lbound(this%a_3d_t_h, 3):ubound(this%a_3d_t_h, 3), &
-            ivs:ive) => this%a_3d_t_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_t_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_t  , 1):ubound(this%a_3d_t  , 1), &
             lbound(this%a_3d_t  , 2):ubound(this%a_3d_t  , 2), &
             lbound(this%a_3d_t  , 3):ubound(this%a_3d_t  , 3), &
-            ivs:ive) => this%a_3d_t  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_t  (:,:,:,is:ie)
       end if
     case ('B')
       if (with_halo) then
         ptr(lbound(this%a_3d_b_h, 1):ubound(this%a_3d_b_h, 1), &
             lbound(this%a_3d_b_h, 2):ubound(this%a_3d_b_h, 2), &
             lbound(this%a_3d_b_h, 3):ubound(this%a_3d_b_h, 3), &
-            ivs:ive) => this%a_3d_b_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_b_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_b  , 1):ubound(this%a_3d_b  , 1), &
             lbound(this%a_3d_b  , 2):ubound(this%a_3d_b  , 2), &
             lbound(this%a_3d_b  , 3):ubound(this%a_3d_b  , 3), &
-            ivs:ive) => this%a_3d_b  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_b  (:,:,:,is:ie)
       end if
     case ('U')
       if (with_halo) then
         ptr(lbound(this%a_3d_u_h, 1):ubound(this%a_3d_u_h, 1), &
             lbound(this%a_3d_u_h, 2):ubound(this%a_3d_u_h, 2), &
             lbound(this%a_3d_u_h, 3):ubound(this%a_3d_u_h, 3), &
-            ivs:ive) => this%a_3d_u_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_u_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_u  , 1):ubound(this%a_3d_u  , 1), &
             lbound(this%a_3d_u  , 2):ubound(this%a_3d_u  , 2), &
             lbound(this%a_3d_u  , 3):ubound(this%a_3d_u  , 3), &
-            ivs:ive) => this%a_3d_u  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_u  (:,:,:,is:ie)
       end if
     case ('D')
       if (with_halo) then
         ptr(lbound(this%a_3d_d_h, 1):ubound(this%a_3d_d_h, 1), &
             lbound(this%a_3d_d_h, 2):ubound(this%a_3d_d_h, 2), &
             lbound(this%a_3d_d_h, 3):ubound(this%a_3d_d_h, 3), &
-            ivs:ive) => this%a_3d_d_h(:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_d_h(:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_d  , 1):ubound(this%a_3d_d  , 1), &
             lbound(this%a_3d_d  , 2):ubound(this%a_3d_d  , 2), &
             lbound(this%a_3d_d  , 3):ubound(this%a_3d_d  , 3), &
-            ivs:ive) => this%a_3d_d  (:,:,:,ivs:ive)
+            1:ie-is+1) => this%a_3d_d  (:,:,:,is:ie)
       end if
     case default
       nullify(ptr)
@@ -1214,7 +1188,7 @@ contains
     character(*), intent(in) :: loc
     character(*), intent(in) :: tag
 
-    integer ivs, ive, loc_is
+    integer is, ie, loc_is
     logical with_halo
 
     if (.not. this%initialized) then
@@ -1222,25 +1196,9 @@ contains
       return
     end if
 
-    ivs = 0; ive = 0; loc_is = 0
-    do i = 1, this%var_stack%size
-      associate (info => this%var_stack%var_info(i))
-      if (info%loc == loc .and. info%tag == tag) then
-        if (loc_is == 0) loc_is = i
-        if (ivs == 0) then
-          ivs = i
-          with_halo = info%with_halo
-        end if
-      else if (ivs /= 0) then
-        ive = i - 1
-        exit
-      end if
-      end associate
-    end do
-    if (ivs == 0) return
-    if (ive == 0) ive = i - 1 ! Matched variables are at tail.
-    ivs = ivs - loc_is + 1
-    ive = ive - loc_is + 1
+    call this%var_stack%get_idx(loc, tag, is, ie, with_halo)
+
+    print *, tag, ' ', loc, ' ', is, ie, with_halo
 
     select case (loc)
     case ('LQ')
@@ -1249,13 +1207,13 @@ contains
             lbound(this%a_3d_lq_h, 2):ubound(this%a_3d_lq_h, 2), &
             lbound(this%a_3d_lq_h, 3):ubound(this%a_3d_lq_h, 3), &
             lbound(this%a_3d_lq_h, 4):ubound(this%a_3d_lq_h, 4), &
-            ivs:ive) => this%a_3d_lq_h(:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_lq_h(:,:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_lq  , 1):ubound(this%a_3d_lq  , 1), &
             lbound(this%a_3d_lq  , 2):ubound(this%a_3d_lq  , 2), &
             lbound(this%a_3d_lq  , 3):ubound(this%a_3d_lq  , 3), &
             lbound(this%a_3d_lq  , 4):ubound(this%a_3d_lq  , 4), &
-            ivs:ive) => this%a_3d_lq  (:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_lq  (:,:,:,:,is:ie)
       end if
     case ('RQ')
       if (with_halo) then
@@ -1263,13 +1221,13 @@ contains
             lbound(this%a_3d_rq_h, 2):ubound(this%a_3d_rq_h, 2), &
             lbound(this%a_3d_rq_h, 3):ubound(this%a_3d_rq_h, 3), &
             lbound(this%a_3d_rq_h, 4):ubound(this%a_3d_rq_h, 4), &
-            ivs:ive) => this%a_3d_rq_h(:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_rq_h(:,:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_rq  , 1):ubound(this%a_3d_rq  , 1), &
             lbound(this%a_3d_rq  , 2):ubound(this%a_3d_rq  , 2), &
             lbound(this%a_3d_rq  , 3):ubound(this%a_3d_rq  , 3), &
             lbound(this%a_3d_rq  , 4):ubound(this%a_3d_rq  , 4), &
-            ivs:ive) => this%a_3d_rq  (:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_rq  (:,:,:,:,is:ie)
       end if
     case ('TQ')
       if (with_halo) then
@@ -1277,13 +1235,13 @@ contains
             lbound(this%a_3d_tq_h, 2):ubound(this%a_3d_tq_h, 2), &
             lbound(this%a_3d_tq_h, 3):ubound(this%a_3d_tq_h, 3), &
             lbound(this%a_3d_tq_h, 4):ubound(this%a_3d_tq_h, 4), &
-            ivs:ive) => this%a_3d_tq_h(:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_tq_h(:,:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_tq  , 1):ubound(this%a_3d_tq  , 1), &
             lbound(this%a_3d_tq  , 2):ubound(this%a_3d_tq  , 2), &
             lbound(this%a_3d_tq  , 3):ubound(this%a_3d_tq  , 3), &
             lbound(this%a_3d_tq  , 4):ubound(this%a_3d_tq  , 4), &
-            ivs:ive) => this%a_3d_tq  (:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_tq  (:,:,:,:,is:ie)
       end if
     case ('BQ')
       if (with_halo) then
@@ -1291,13 +1249,13 @@ contains
             lbound(this%a_3d_bq_h, 2):ubound(this%a_3d_bq_h, 2), &
             lbound(this%a_3d_bq_h, 3):ubound(this%a_3d_bq_h, 3), &
             lbound(this%a_3d_bq_h, 4):ubound(this%a_3d_bq_h, 4), &
-            ivs:ive) => this%a_3d_bq_h(:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_bq_h(:,:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_bq  , 1):ubound(this%a_3d_bq  , 1), &
             lbound(this%a_3d_bq  , 2):ubound(this%a_3d_bq  , 2), &
             lbound(this%a_3d_bq  , 3):ubound(this%a_3d_bq  , 3), &
             lbound(this%a_3d_bq  , 4):ubound(this%a_3d_bq  , 4), &
-            ivs:ive) => this%a_3d_bq  (:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_bq  (:,:,:,:,is:ie)
       end if
     case ('UQ')
       if (with_halo) then
@@ -1305,13 +1263,13 @@ contains
             lbound(this%a_3d_uq_h, 2):ubound(this%a_3d_uq_h, 2), &
             lbound(this%a_3d_uq_h, 3):ubound(this%a_3d_uq_h, 3), &
             lbound(this%a_3d_uq_h, 4):ubound(this%a_3d_uq_h, 4), &
-            ivs:ive) => this%a_3d_uq_h(:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_uq_h(:,:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_uq  , 1):ubound(this%a_3d_uq  , 1), &
             lbound(this%a_3d_uq  , 2):ubound(this%a_3d_uq  , 2), &
             lbound(this%a_3d_uq  , 3):ubound(this%a_3d_uq  , 3), &
             lbound(this%a_3d_uq  , 4):ubound(this%a_3d_uq  , 4), &
-            ivs:ive) => this%a_3d_uq  (:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_uq  (:,:,:,:,is:ie)
       end if
     case ('DQ')
       if (with_halo) then
@@ -1319,13 +1277,13 @@ contains
             lbound(this%a_3d_dq_h, 2):ubound(this%a_3d_dq_h, 2), &
             lbound(this%a_3d_dq_h, 3):ubound(this%a_3d_dq_h, 3), &
             lbound(this%a_3d_dq_h, 4):ubound(this%a_3d_dq_h, 4), &
-            ivs:ive) => this%a_3d_dq_h(:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_dq_h(:,:,:,:,is:ie)
       else
         ptr(lbound(this%a_3d_dq  , 1):ubound(this%a_3d_dq  , 1), &
             lbound(this%a_3d_dq  , 2):ubound(this%a_3d_dq  , 2), &
             lbound(this%a_3d_dq  , 3):ubound(this%a_3d_dq  , 3), &
             lbound(this%a_3d_dq  , 4):ubound(this%a_3d_dq  , 4), &
-            ivs:ive) => this%a_3d_dq  (:,:,:,:,ivs:ive)
+            is:ie) => this%a_3d_dq  (:,:,:,:,is:ie)
       end if
     case default
       nullify(ptr)
@@ -1349,13 +1307,24 @@ contains
 
     if (.not. fiona_has_dataset(dataset_name)) then
       call fiona_create_dataset(dataset_name, desc=desc, file_path=file_path, file_prefix=file_prefix, mpi_comm=proc%comm)
-      call fiona_add_dim(dataset_name, 'x', 'Domain x coordinate', '', nx, decomp=.true.)
-      call fiona_add_dim(dataset_name, 'y', 'Domain y coordinate', '', ny, decomp=.true.)
-      call fiona_add_dim(dataset_name, 'z', 'Domain z coordinate', '', nz, decomp=.true.)
+      call fiona_add_dim(dataset_name, 'x'   , 'Domain x coordinate', '', nx, decomp=.true.)
+      call fiona_add_dim(dataset_name, 'y'   , 'Domain y coordinate', '', ny, decomp=.true.)
+      call fiona_add_dim(dataset_name, 'z'   , 'Domain z coordinate', '', nz, decomp=.true.)
       call fiona_add_dim(dataset_name, 'time', add_var=.true.)
-      call fiona_add_var(dataset_name, 'lon', 'Longitude', 'degrees_east' , ['x', 'y'], 'r4')
-      call fiona_add_var(dataset_name, 'lat', 'Latitude' , 'degrees_north', ['x', 'y'], 'r4')
-      call fiona_add_var(dataset_name,   'J', 'Jacobian sqrt(det(G))', '-', ['x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lon' , 'Longitude', 'degrees_east' , ['x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lat' , 'Latitude' , 'degrees_north', ['x', 'y'], 'r4')
+      call fiona_add_var(dataset_name,   'J' , 'Jacobian sqrt(det(G))', '-', ['x', 'y'], 'r4')
+
+      ! For testing
+      call fiona_add_dim(dataset_name, 'eq', 'Edge quadtrature points', '', neq)
+      call fiona_add_var(dataset_name, 'lon_lq', '', 'degrees_east' , ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lat_lq', '', 'degrees_north', ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lon_rq', '', 'degrees_east' , ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lat_rq', '', 'degrees_north', ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lon_bq', '', 'degrees_east' , ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lat_bq', '', 'degrees_north', ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lon_tq', '', 'degrees_east' , ['eq', 'x', 'y'], 'r4')
+      call fiona_add_var(dataset_name, 'lat_tq', '', 'degrees_north', ['eq', 'x', 'y'], 'r4')
     end if
     call this%append_dataset(dataset_name)
 
@@ -1367,6 +1336,7 @@ contains
     character(*), intent(in) :: dataset_name
 
     character(4) cell_3d_dims(4), cell_2d_dims(3)
+    character(30) var_name
     integer i
 
     cell_3d_dims(1) = 'x'
@@ -1381,20 +1351,38 @@ contains
       associate (info => this%var_stack%var_info(i))
       if (info%output) then
         if (fiona_has_var(dataset_name, info%name)) cycle
-        if (proc%is_root()) call log_notice('Define output for variable ' // trim(info%name) // '.', pid=proc%id)
         if (info%only_2d) then
           select case (info%loc)
           case ('C', 'CA')
-            call fiona_add_var(dataset_name, info%name, info%long_name, info%units, cell_2d_dims, 'r4')
-            call fiona_add_att(dataset_name, info%name, 'coordinates', 'lon lat')
+            var_name = info%name
+            call fiona_add_var(dataset_name, var_name, info%long_name, info%units, cell_2d_dims, 'r4')
+            call fiona_add_att(dataset_name, var_name, 'coordinates', 'lon lat')
           end select
         else
           select case (info%loc)
           case ('C', 'CA')
-            call fiona_add_var(dataset_name, info%name, info%long_name, info%units, cell_3d_dims, 'r4')
-            call fiona_add_att(dataset_name, info%name, 'coordinates', 'lon lat z')
+            var_name = info%name
+            call fiona_add_var(dataset_name, var_name, info%long_name, info%units, cell_3d_dims, 'r4')
+            call fiona_add_att(dataset_name, var_name, 'coordinates', 'lon lat z')
+          case ('LQ')
+            var_name = trim(info%name) // '_lq'
+            call fiona_add_var(dataset_name, var_name, info%long_name, info%units, ['eq', 'x', 'y', 'z', 'time'])
+            call fiona_add_att(dataset_name, var_name, 'coordinates', 'lon_lq lat_lq z')
+          case ('RQ')
+            var_name = trim(info%name) // '_rq'
+            call fiona_add_var(dataset_name, var_name, info%long_name, info%units, ['eq', 'x', 'y', 'z', 'time'])
+            call fiona_add_att(dataset_name, var_name, 'coordinates', 'lon_rq lat_rq z')
+          case ('BQ')
+            var_name = trim(info%name) // '_bq'
+            call fiona_add_var(dataset_name, var_name, info%long_name, info%units, ['eq', 'x', 'y', 'z', 'time'])
+            call fiona_add_att(dataset_name, var_name, 'coordinates', 'lon_bq lat_bq z')
+          case ('TQ')
+            var_name = trim(info%name) // '_tq'
+            call fiona_add_var(dataset_name, var_name, info%long_name, info%units, ['eq', 'x', 'y', 'z', 'time'])
+            call fiona_add_att(dataset_name, var_name, 'coordinates', 'lon_tq lat_tq z')
           end select
         end if
+        call log_notice('Define output for variable ' // trim(var_name) // '.', pid=proc%id)
       end if
       end associate
     end do
@@ -1411,9 +1399,10 @@ contains
 
     real(r8), pointer :: ptr_2d(:,:)
     real(r8), pointer :: ptr_3d(:,:,:)
-    integer i, ids, ide, jds, jde, kds, kde, pc, nx, ny, nz
+    real(r8), pointer :: ptr_4d(:,:,:,:)
+    integer i, ids, ide, jds, jde, kds, kde, pc, nx, ny, nz, neq, pes, pee
 
-    call this%mesh%get_params(ids=ids, ide=ide, jds=jds, jde=jde, kds=kds, kde=kde, pc=pc)
+    call this%mesh%get_params(ids=ids, ide=ide, jds=jds, jde=jde, kds=kds, kde=kde, pc=pc, neq=neq)
 
     nx = ide - ids + 1
     ny = jde - jds + 1
@@ -1423,21 +1412,86 @@ contains
     do i = 1, this%var_stack%size
       associate (info => this%var_stack%var_info(i))
       if (info%output) then
-        if (info%only_2d) then
-          call this%get_array(ptr_2d, info)
-          call fiona_output(dataset_name, info%name, ptr_2d(ids:ide,jds:jde), &
-                            start=[ids,jds], count=[nx,ny])
-        else
-          call this%get_array(ptr_3d, info)
-          call fiona_output(dataset_name, info%name, ptr_3d(ids:ide,jds:jde,kds:kde), &
-                            start=[ids,jds,kds], count=[nx,ny,nz])
-        end if
+        select case (info%loc)
+        case ('C', 'CA')
+          if (info%only_2d) then
+            call this%get_array(ptr_2d, info)
+            call fiona_output(dataset_name, info%name, ptr_2d(ids:ide,jds:jde), &
+                              start=[ids,jds], count=[nx,ny])
+          else
+            call this%get_array(ptr_3d, info)
+            call fiona_output(dataset_name, info%name, ptr_3d(ids:ide,jds:jde,kds:kde), &
+                              start=[ids,jds,kds], count=[nx,ny,nz])
+          end if
+        case ('LQ')
+          if (info%only_2d) then
+            call this%get_array(ptr_3d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_lq', ptr_3d(:,ids:ide,jds:jde), &
+                              start=[1,ids,jds], count=[neq,nx,ny])
+          else
+            call this%get_array(ptr_4d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_lq', ptr_4d(:,ids:ide,jds:jde,kds:kde), &
+                              start=[1,ids,jds,kds], count=[neq,nx,ny,nz])
+          end if
+        case ('RQ')
+          if (info%only_2d) then
+            call this%get_array(ptr_3d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_rq', ptr_3d(:,ids:ide,jds:jde), &
+                              start=[1,ids,jds], count=[neq,nx,ny])
+          else
+            call this%get_array(ptr_4d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_rq', ptr_4d(:,ids:ide,jds:jde,kds:kde), &
+                              start=[1,ids,jds,kds], count=[neq,nx,ny,nz])
+          end if
+        case ('BQ')
+          if (info%only_2d) then
+            call this%get_array(ptr_3d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_bq', ptr_3d(:,ids:ide,jds:jde), &
+                              start=[1,ids,jds], count=[neq,nx,ny])
+          else
+            call this%get_array(ptr_4d, info)
+            print *, info%array_idx
+            call fiona_output(dataset_name, trim(info%name) // '_bq', ptr_4d(:,ids:ide,jds:jde,kds:kde), &
+                              start=[1,ids,jds,kds], count=[neq,nx,ny,nz])
+          end if
+        case ('TQ')
+          if (info%only_2d) then
+            call this%get_array(ptr_3d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_tq', ptr_3d(:,ids:ide,jds:jde), &
+                              start=[1,ids,jds], count=[neq,nx,ny])
+          else
+            call this%get_array(ptr_4d, info)
+            call fiona_output(dataset_name, trim(info%name) // '_tq', ptr_4d(:,ids:ide,jds:jde,kds:kde), &
+                              start=[1,ids,jds,kds], count=[neq,nx,ny,nz])
+          end if
+        end select
       end if
       end associate
     end do
     call fiona_output(dataset_name, 'lon', this%mesh%lon(pc,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
     call fiona_output(dataset_name, 'lat', this%mesh%lat(pc,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
     call fiona_output(dataset_name,   'J', this%mesh% J (pc,ids:ide,jds:jde)      , start=[ids,jds], count=[nx,ny])
+
+    pes = this%mesh%pes(left)
+    pee = this%mesh%pee(left)
+    call fiona_output(dataset_name, 'lon_lq', this%mesh%lon(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+    call fiona_output(dataset_name, 'lat_lq', this%mesh%lat(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+
+    pes = this%mesh%pes(right)
+    pee = this%mesh%pee(right)
+    call fiona_output(dataset_name, 'lon_rq', this%mesh%lon(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+    call fiona_output(dataset_name, 'lat_rq', this%mesh%lat(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+
+    pes = this%mesh%pes(bottom)
+    pee = this%mesh%pee(bottom)
+    call fiona_output(dataset_name, 'lon_bq', this%mesh%lon(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+    call fiona_output(dataset_name, 'lat_bq', this%mesh%lat(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+
+    pes = this%mesh%pes(top)
+    pee = this%mesh%pee(top)
+    call fiona_output(dataset_name, 'lon_tq', this%mesh%lon(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+    call fiona_output(dataset_name, 'lat_tq', this%mesh%lat(pes:pee,ids:ide,jds:jde) * deg, start=[ids,jds], count=[nx,ny])
+
     call fiona_end_output(dataset_name)
 
   end subroutine latlon_array_write

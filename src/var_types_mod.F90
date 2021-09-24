@@ -37,6 +37,7 @@ module var_types_mod
     procedure :: append  => var_stack_append
     procedure :: reorder => var_stack_reorder
     procedure :: name_at => var_stack_name_at
+    procedure :: get_idx => var_stack_get_idx
     final :: var_stack_final
   end type var_stack_type
 
@@ -155,6 +156,46 @@ contains
     res = this%var_info(idx)%name
 
   end function var_stack_name_at
+
+  subroutine var_stack_get_idx(this, loc, tag, is, ie, with_halo)
+
+    class(var_stack_type), intent(in) :: this
+    character(*), intent(in) :: loc
+    character(*), intent(in) :: tag
+    integer, intent(out) :: is
+    integer, intent(out) :: ie
+    logical, intent(out) :: with_halo
+
+    integer i, j, loc_is
+
+    do i = 1, this%size
+      associate (info => this%var_info(i))
+      if (info%loc == loc .and. info%tag == tag) then
+        with_halo = info%with_halo
+        exit
+      end if
+      end associate
+    end do
+
+    j = 0; is = 0; ie = 0; loc_is = 0
+    do i = 1, this%size
+      associate (info => this%var_info(i))
+      if (info%loc == loc .and. info%with_halo == with_halo) j = j + 1
+      if (info%loc == loc .and. info%with_halo == with_halo .and. loc_is == 0) loc_is = j
+      if (info%loc == loc .and. info%with_halo == with_halo .and. info%tag == tag) then
+        if (is == 0) is = j
+      else if (loc_is /= 0 .and. is /= 0) then
+        ie = j
+        exit
+      end if
+      end associate
+    end do
+    if (is == 0) return
+    if (ie == 0) ie = j
+    is = is - loc_is + 1 ! Convert to local index.
+    ie = ie - loc_is + 1
+
+  end subroutine var_stack_get_idx
 
   subroutine var_stack_final(this)
 

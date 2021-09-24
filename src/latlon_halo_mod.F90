@@ -6,11 +6,12 @@ module latlon_halo_mod
   implicit none
 
   type latlon_halo_type
-    logical :: initialized = .false.
-    integer :: host_id = MPI_PROC_NULL
-    integer :: proc_id = MPI_PROC_NULL
-    integer :: orient  = 0
-    integer :: dtype   = 0
+    logical :: initialized  = .false.
+    integer :: host_id      = MPI_PROC_NULL
+    integer :: proc_id      = MPI_PROC_NULL
+    integer :: orient       = 0
+    integer :: pair_orient  = 0
+    integer :: dtype        = 0
     integer :: send_type_2d = MPI_DATATYPE_NULL
     integer :: recv_type_2d = MPI_DATATYPE_NULL
     integer :: send_type_3d = MPI_DATATYPE_NULL
@@ -64,43 +65,51 @@ contains
     ! NOTE: MPI array index starts from zero.
     select case (orient)
     case (left)
+      this%pair_orient = right
       this%send_subarray_start = [ids      -ims,jds      -jms,0 ]
-      this%recv_subarray_start = [ids-hwx+1-ims,jds      -jms,0 ]
+      this%recv_subarray_start = [ids-hwx  -ims,jds      -jms,0 ]
       this%send_subarray_size  = [hwx          ,ny           ,nz]
       this%recv_subarray_size  = [hwx          ,ny           ,nz]
     case (left_bottom)
+      this%pair_orient = right_top
       this%send_subarray_start = [ids      -ims,jds      -jms,0 ]
-      this%recv_subarray_start = [ids-hwx+1-ims,jds-hwy+1-jms,0 ]
+      this%recv_subarray_start = [ids-hwx  -ims,jds-hwy  -jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (left_top)
+      this%pair_orient = right_bottom
       this%send_subarray_start = [ids      -ims,jde-hwy+1-jms,0 ]
-      this%recv_subarray_start = [ids-hwx+1-ims,jde    +1-jms,0 ]
+      this%recv_subarray_start = [ids-hwx  -ims,jde    +1-jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (right)
+      this%pair_orient = left
       this%send_subarray_start = [ide-hwx+1-ims,jds      -jms,0 ]
       this%recv_subarray_start = [ide    +1-ims,jds      -jms,0 ]
       this%send_subarray_size  = [hwx          ,ny           ,nz]
       this%recv_subarray_size  = [hwx          ,ny           ,nz]
     case (right_bottom)
+      this%pair_orient = left_top
       this%send_subarray_start = [ide-hwx+1-ims,jds      -jms,0 ]
-      this%recv_subarray_start = [ide    +1-ims,jds-hwy+1-jms,0 ]
+      this%recv_subarray_start = [ide    +1-ims,jds-hwy  -jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (right_top)
+      this%pair_orient = left_bottom
       this%send_subarray_start = [ide-hwx+1-ims,jde-hwy+1-jms,0 ]
       this%recv_subarray_start = [ide    +1-ims,jde    +1-jms,0 ]
       this%send_subarray_size  = [hwx          ,hwy          ,nz]
       this%recv_subarray_size  = [hwx          ,hwy          ,nz]
     case (top)
+      this%pair_orient = bottom
       this%send_subarray_start = [ids      -ims,jde-hwy+1-jms,0 ]
       this%recv_subarray_start = [ids      -ims,jde    +1-jms,0 ]
       this%send_subarray_size  = [nx           ,hwy          ,nz]
       this%recv_subarray_size  = [nx           ,hwy          ,nz]
     case (bottom)
+      this%pair_orient = top
       this%send_subarray_start = [ids      -ims,jds      -jms,0 ]
-      this%recv_subarray_start = [ids      -ims,jds-hwy+1-jms,0 ]
+      this%recv_subarray_start = [ids      -ims,jds-hwy  -jms,0 ]
       this%send_subarray_size  = [nx           ,hwy          ,nz]
       this%recv_subarray_size  = [nx           ,hwy          ,nz]
     end select

@@ -77,6 +77,7 @@ contains
     if (merge(npx * npy == this%np, .false., present(npx) .and. present(npy))) then
       this%cart_dims = [npx, npy]
     else
+      ! Fall back to 1D decomposition.
       this%cart_dims = [1, this%np]
     end if
 
@@ -107,6 +108,7 @@ contains
     real(r8), intent(in) :: r
 
     integer ierr, cart_coords(2), tmp_id(1), i
+    integer ims, ime, jms, jme, ids, ide, jds, jde
 
     ! Set neighborhood of the process.
     if (allocated(this%ngb)) deallocate(this%ngb)
@@ -153,14 +155,19 @@ contains
     call mesh%init(nx, ny, nz, dx=pi2/nx, dy=pi/ny, hwx=hwx, hwy=hwy, nw=nw, neq=neq, r=r, &
                    ids=proc%is, ide=proc%ie, jds=proc%js, jde=proc%je)
 
-    call this%ngb(left        )%init(left        , hwx, hwy, mesh%ims    , mesh%ids - 1, mesh%jds    , mesh%jde    )
-    call this%ngb(right       )%init(right       , hwx, hwy, mesh%ide + 1, mesh%ime    , mesh%jds    , mesh%jde    )
-    call this%ngb(bottom      )%init(bottom      , hwx, hwy, mesh%ids    , mesh%ide    , mesh%jms    , mesh%jds - 1)
-    call this%ngb(top         )%init(top         , hwx, hwy, mesh%ids    , mesh%ide    , mesh%jde + 1, mesh%jme    )
-    call this%ngb(left_bottom )%init(left_bottom , hwx, hwy, mesh%ims    , mesh%ids - 1, mesh%jms    , mesh%jds - 1)
-    call this%ngb(left_top    )%init(left_top    , hwx, hwy, mesh%ims    , mesh%ids - 1, mesh%jde + 1, mesh%jme    )
-    call this%ngb(right_bottom)%init(right_bottom, hwx, hwy, mesh%ide + 1, mesh%ime    , mesh%jms    , mesh%jds - 1)
-    call this%ngb(right_top   )%init(right_top   , hwx, hwy, mesh%ide + 1, mesh%ime    , mesh%jde + 1, mesh%jme    )
+    call mesh%get_params(ims=ims, ime=ime, jms=jms, jme=jme, ids=ids, ide=ide, jds=jds, jde=jde)
+
+    ! Exclude fill values for easing loop.
+    ims = ims + nw; ime = ime - nw; jms = jms + nw; jme = jme - nw
+
+    call this%ngb(left        )%init(left        , hwx, hwy, ims    , ids - 1, jds    , jde    )
+    call this%ngb(right       )%init(right       , hwx, hwy, ide + 1, ime    , jds    , jde    )
+    call this%ngb(bottom      )%init(bottom      , hwx, hwy, ids    , ide    , jms    , jds - 1)
+    call this%ngb(top         )%init(top         , hwx, hwy, ids    , ide    , jde + 1, jme    )
+    call this%ngb(left_bottom )%init(left_bottom , hwx, hwy, ims    , ids - 1, jms    , jds - 1)
+    call this%ngb(left_top    )%init(left_top    , hwx, hwy, ims    , ids - 1, jde + 1, jme    )
+    call this%ngb(right_bottom)%init(right_bottom, hwx, hwy, ide + 1, ime    , jms    , jds - 1)
+    call this%ngb(right_top   )%init(right_top   , hwx, hwy, ide + 1, ime    , jde + 1, jme    )
 
   end subroutine latlon_process_decomp_domain
 
